@@ -16,7 +16,7 @@ public class ChessBoard {
     public void DefaultBoard() {
         ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
         for(int y = 0; y < 8; y++){
-            for (int x = 0; x > 0; x++){
+            for (int x = 0; x < 8; x++){
                 if (y == 0){
                     color = ChessGame.TeamColor.WHITE;
                 }
