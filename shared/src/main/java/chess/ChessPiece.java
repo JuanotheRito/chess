@@ -80,8 +80,8 @@ public class ChessPiece {
 
     /**
      * Calculates all the valid moves of a white pawn at the position indicated
-     * @param board
-     * @param myPosition
+     * @param board Chess board with pieces on it
+     * @param myPosition Position of the pawn
      * @return ArrayList of all valid moves of the white pawn
      */
     public ArrayList<ChessMove> whitePawnMoveCalculator(ChessBoard board, ChessPosition myPosition) {
