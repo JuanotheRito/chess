@@ -69,26 +69,27 @@ public class ChessPiece {
 
     /**
      * Adds a valid piece move to the specified ArrayList of ChessMoves
-     * @param validMoves ArrayList of valid ChessMoves
+     *
+     * @param validMoves    ArrayList of valid ChessMoves
      * @param startPosition Current position of the piece
-     * @param newPosition Position of the piece after the given move is executed
+     * @param newPosition   Position of the piece after the given move is executed
      */
-    private void addValidMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition, ChessPosition newPosition){
+    private void addValidMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition, ChessPosition newPosition) {
         validMoves.add(new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), null));
     }
 
     /**
      * Adds a valid pawn move to the specified ArrayList of ChessMoves
-     * @param validMoves ArrayList of valid ChessMoves
-     * @param startPosition Current position of the pawn
-     * @param newPosition Position of the pawn after the given move is executed
+     *
+     * @param validMoves      ArrayList of valid ChessMoves
+     * @param startPosition   Current position of the pawn
+     * @param newPosition     Position of the pawn after the given move is executed
      * @param promotionPieces Array of the possible pieces the pawn can be promoted to
      */
     private void addValidPawnMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition, ChessPosition newPosition, ChessPiece.PieceType[] promotionPieces) {
-        if (promotionPieces[0] == null){
+        if (promotionPieces[0] == null) {
             validMoves.add(new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), null));
-        }
-        else {
+        } else {
             for (PieceType promotionPiece : promotionPieces) {
                 validMoves.add(new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), promotionPiece));
             }
@@ -97,7 +98,8 @@ public class ChessPiece {
 
     /**
      * Calculates all the valid moves of a white pawn at the position indicated
-     * @param board Chess board with pieces on it
+     *
+     * @param board      Chess board with pieces on it
      * @param myPosition Position of the pawn
      * @return ArrayList of all valid moves of the white pawn
      */
@@ -106,7 +108,7 @@ public class ChessPiece {
         ChessPosition possibleMove = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         boolean hasMoved = false;
         PieceType[] promotionPieces = new PieceType[4];
-        if (myPosition.getRow() == 7){
+        if (myPosition.getRow() == 7) {
             promotionPieces[0] = PieceType.QUEEN;
             promotionPieces[1] = PieceType.KNIGHT;
             promotionPieces[2] = PieceType.ROOK;
@@ -152,7 +154,8 @@ public class ChessPiece {
 
     /**
      * Calculates all the valid moves of a black pawn at the position indicated
-     * @param board Current game of chess being played
+     *
+     * @param board      Current game of chess being played
      * @param myPosition Position of the pawn
      * @return ArrayList of all valid moves of the white pawn
      */
@@ -161,7 +164,7 @@ public class ChessPiece {
         ChessPosition possibleMove = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         boolean hasMoved = false;
         PieceType[] promotionPieces = new PieceType[4];
-        if (myPosition.getRow() == 2){
+        if (myPosition.getRow() == 2) {
             promotionPieces[0] = PieceType.QUEEN;
             promotionPieces[1] = PieceType.KNIGHT;
             promotionPieces[2] = PieceType.ROOK;
@@ -206,12 +209,13 @@ public class ChessPiece {
     }
 
     /**
-     * Calculates all the valid moves of a king at the position given
-     * @param board Current game of chess being played
+     * Calculates all the valid moves of a king at the given position
+     *
+     * @param board      Current game of chess being played
      * @param myPosition Position of the king
      * @return ArrayList of all valid moves of the king
      */
-    public ArrayList<ChessMove> kingMoveCalculator(ChessBoard board, ChessPosition myPosition){
+    public ArrayList<ChessMove> kingMoveCalculator(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> validMoves = new ArrayList<>();
         boolean moveUp = myPosition.getRow() != 8;
         boolean moveDown = myPosition.getRow() != 1;
@@ -221,109 +225,224 @@ public class ChessPiece {
         ChessPiece boardSpace;
         ChessPiece king = board.getPiece(myPosition);
         //Upwards Move
-        if (moveUp){
-            newPosition = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
+        if (moveUp) {
+            newPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn());
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Downwards Move
-        if (moveDown){
-            newPosition = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
+        if (moveDown) {
+            newPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn());
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Left Move
-        if (moveLeft){
-            newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn()-1);
+        if (moveLeft) {
+            newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1);
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Right Move
-        if (moveRight){
-            newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn()+1);
+        if (moveRight) {
+            newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1);
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Diagonal Up Left Move
-        if (moveLeft && moveUp){
-            newPosition = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()-1);
+        if (moveLeft && moveUp) {
+            newPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1);
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Diagonal Down Left Move
-        if (moveLeft && moveDown){
-            newPosition = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-1);
+        if (moveLeft && moveDown) {
+            newPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1);
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Diagonal Up Right Move
-        if (moveUp && moveRight){
-            newPosition = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()+1);
+        if (moveUp && moveRight) {
+            newPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1);
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
         //Diagonal Down Right Move
-        if (moveDown && moveRight){
-            newPosition = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()+1);
+        if (moveDown && moveRight) {
+            newPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1);
             boardSpace = board.getPiece(newPosition);
-            if (boardSpace!=null){
-                if (boardSpace.getTeamColor()!= king.getTeamColor()){
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != king.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-            }
-            else{
+            } else {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
+        return validMoves;
+    }
+    /**
+     * Calculates all the valid moves of a knight at the given position
+     *
+     * @param board      Current game of chess being played
+     * @param myPosition Position of the knight
+     * @return ArrayList of all valid moves of the knight
+     */
+    public ArrayList<ChessMove> knightMoveCalculator(ChessBoard board, ChessPosition myPosition) {
+        ArrayList<ChessMove> validMoves = new ArrayList<>();
+        ChessPosition newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        ChessPiece boardSpace;
+        ChessPiece knight = board.getPiece(myPosition);
+
+        //determines if the knight is too close to the edge of the board to execute certain moves
+        boolean doubleDown = myPosition.getRow() > 2;
+        boolean doubleUp = myPosition.getRow() < 7;
+        boolean doubleLeft = myPosition.getColumn() > 2;
+        boolean doubleRight = myPosition.getColumn() < 7;
+        boolean down = myPosition.getRow() != 1;
+        boolean up = myPosition.getRow() != 8;
+        boolean left = myPosition.getColumn() != 1;
+        boolean right = myPosition.getColumn() !=8;
+
+        //Down and Left
+        if (doubleDown && left) {
+            newPosition = new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() - 1);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Down and Right
+        if (doubleDown && right) {
+            newPosition = new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() + 1);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Left and Down
+        if (doubleLeft && down) {
+            newPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 2);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Left and Up
+        if (doubleLeft && up) {
+            newPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 2);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Right and Down
+        if (doubleRight && down) {
+            newPosition = new ChessPosition(myPosition.getRow() -1, myPosition.getColumn() + 2);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Right and Up
+        if (doubleRight && up) {
+            newPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 2);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Up and Left
+        if (doubleUp && left) {
+            newPosition = new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn() - 1);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        //Up and Right
+        if (doubleUp && right) {
+            newPosition = new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn() + 1);
+            boardSpace = board.getPiece(newPosition);
+            if (boardSpace != null) {
+                if (boardSpace.getTeamColor() != knight.getTeamColor()) {
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+            } else {
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+
+
         return validMoves;
     }
 
@@ -336,16 +455,18 @@ public class ChessPiece {
      */
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        if (board.getPiece(myPosition).getPieceType() == PieceType.PAWN){
-            if(board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
+        if (board.getPiece(myPosition).getPieceType() == PieceType.PAWN) {
+            if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
                 return whitePawnMoveCalculator(board, myPosition);
-            }
-            else{
+            } else {
                 return blackPawnMoveCalculator(board, myPosition);
             }
         }
-        if (board.getPiece(myPosition).getPieceType() == PieceType.KING){
+        if (board.getPiece(myPosition).getPieceType() == PieceType.KING) {
             return kingMoveCalculator(board, myPosition);
+        }
+        if (board.getPiece(myPosition).getPieceType() == PieceType.KNIGHT) {
+            return knightMoveCalculator(board, myPosition);
         }
         throw new RuntimeException("Not implemented");
     }
