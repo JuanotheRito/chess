@@ -104,8 +104,8 @@ public class ChessPiece {
      * @return ArrayList of all valid moves of the white pawn
      */
     public ArrayList<ChessMove> whitePawnMoveCalculator(ChessBoard board, ChessPosition myPosition) {
-        ArrayList<ChessMove> validMoves = new ArrayList<ChessMove>();
-        ChessPosition possibleMove = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        ArrayList<ChessMove> validMoves = new ArrayList<>();
+        ChessPosition possibleMove;
         boolean hasMoved = false;
         PieceType[] promotionPieces = new PieceType[4];
         if (myPosition.getRow() == 7) {
@@ -160,8 +160,8 @@ public class ChessPiece {
      * @return ArrayList of all valid moves of the white pawn
      */
     public ArrayList<ChessMove> blackPawnMoveCalculator(ChessBoard board, ChessPosition myPosition) {
-        ArrayList<ChessMove> validMoves = new ArrayList<ChessMove>();
-        ChessPosition possibleMove = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        ArrayList<ChessMove> validMoves = new ArrayList<>();
+        ChessPosition possibleMove;
         boolean hasMoved = false;
         PieceType[] promotionPieces = new PieceType[4];
         if (myPosition.getRow() == 2) {
@@ -221,7 +221,7 @@ public class ChessPiece {
         boolean moveDown = myPosition.getRow() != 1;
         boolean moveRight = myPosition.getColumn() != 8;
         boolean moveLeft = myPosition.getColumn() != 1;
-        ChessPosition newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        ChessPosition newPosition;
         ChessPiece boardSpace;
         ChessPiece king = board.getPiece(myPosition);
         //Upwards Move
@@ -348,11 +348,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    up = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
                 else{
-                    up = false;
+                    break;
                 }
             }
             else if (newPosition.getRow() == 8){
@@ -372,11 +372,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    down = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
                 else{
-                    down = false;
+                    break;
                 }
             }
             else if (newPosition.getRow() == 1){
@@ -396,11 +396,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    left = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
                 else{
-                    left = false;
+                    break;
                 }
             }
             else if (newPosition.getColumn() == 1){
@@ -420,12 +420,9 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    right = false;
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-                else{
-                    right = false;
-                }
+                break;
             }
             else if (newPosition.getColumn() == 8){
                 right = false;
@@ -445,22 +442,15 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    left = false;
-                    up = false;
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-                else{
-                    left = false;
-                    up = false;
-                }
+                break;
             }
             else if (newPosition.getColumn() == 1){
-                left = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 8){
-                up = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -480,22 +470,15 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    right = false;
-                    up = false;
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-                else{
-                    right = false;
-                    up = false;
-                }
+                break;
             }
             else if (newPosition.getColumn() == 8){
-                right = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 8){
-                up = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -511,23 +494,16 @@ public class ChessPiece {
             newPosition = new ChessPosition(newPosition.getRow()-1, newPosition.getColumn()-1);
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
-                if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    down = false;
-                    left = false;
+                if (boardSpace.getTeamColor() != queen.getTeamColor()) {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-                else{
-                    down = false;
-                    left = false;
-                }
+                break;
             }
             else if (newPosition.getColumn() == 1){
-                left = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 1){
-                down = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -544,22 +520,15 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != queen.getTeamColor()){
-                    right = false;
-                    down = false;
                     addValidMove(validMoves, myPosition, newPosition);
                 }
-                else{
-                    right = false;
-                    down = false;
-                }
+                break;
             }
             else if (newPosition.getColumn() == 8){
-                right = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 1){
-                down = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -595,11 +564,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != rook.getTeamColor()){
-                    up = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
                 else{
-                    up = false;
+                    break;
                 }
             }
             else if (newPosition.getRow() == 8){
@@ -618,11 +587,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != rook.getTeamColor()){
-                    down = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
-                else{
-                    down = false;
+                else {
+                    break;
                 }
             }
             else if (newPosition.getRow() == 1){
@@ -641,11 +610,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != rook.getTeamColor()){
-                    left = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
                 else{
-                    left = false;
+                    break;
                 }
             }
             else if (newPosition.getColumn() == 1){
@@ -664,11 +633,11 @@ public class ChessPiece {
             boardSpace = board.getPiece(newPosition);
             if (boardSpace != null){
                 if (boardSpace.getTeamColor() != rook.getTeamColor()){
-                    right = false;
                     addValidMove(validMoves, myPosition, newPosition);
+                    break;
                 }
                 else{
-                    right = false;
+                    break;
                 }
             }
             else if (newPosition.getColumn() == 8){
@@ -679,8 +648,6 @@ public class ChessPiece {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
-
-        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
 
         return validMoves;
     }
@@ -719,12 +686,10 @@ public class ChessPiece {
                 }
             }
             else if (newPosition.getColumn() == 1){
-                left = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 8){
-                up = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -753,12 +718,10 @@ public class ChessPiece {
                 }
             }
             else if (newPosition.getColumn() == 8){
-                right = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 8){
-                up = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -784,12 +747,10 @@ public class ChessPiece {
                 }
             }
             else if (newPosition.getColumn() == 1){
-                left = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 1){
-                down = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -815,12 +776,10 @@ public class ChessPiece {
                 }
             }
             else if (newPosition.getColumn() == 8){
-                right = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
             else if (newPosition.getRow() == 1){
-                down = false;
                 addValidMove(validMoves, myPosition, newPosition);
                 break;
             }
@@ -840,7 +799,7 @@ public class ChessPiece {
      */
     public ArrayList<ChessMove> knightMoveCalculator(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> validMoves = new ArrayList<>();
-        ChessPosition newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        ChessPosition newPosition;
         ChessPiece boardSpace;
         ChessPiece knight = board.getPiece(myPosition);
 
