@@ -356,13 +356,14 @@ public class ChessPiece {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
                 else{
-                    break;
+                    up = false;
                 }
             }
             else{
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         up = myPosition.getRow() != 8;
 
         //Down
@@ -379,14 +380,14 @@ public class ChessPiece {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
                 else{
-                    down = myPosition.getRow() != 1;
-                    break;
+                    down = false;
                 }
             }
             else{
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         down = myPosition.getRow() != 1;
 
         //Left
@@ -403,15 +404,16 @@ public class ChessPiece {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
                 else{
-                    left = myPosition.getColumn() != 1;
-                    break;
+                    left = false;
                 }
             }
             else{
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         left = myPosition.getColumn() != 1;
+
         //Right
         while (right) {
             newPosition = new ChessPosition(newPosition.getRow(), newPosition.getColumn()+1);
@@ -426,8 +428,7 @@ public class ChessPiece {
                     addValidMove(validMoves, myPosition, newPosition);
                 }
                 else{
-                    right = myPosition.getColumn() != 8;
-                    break;
+                    right = false;
                 }
             }
             else{
@@ -435,10 +436,137 @@ public class ChessPiece {
             }
         }
         right = myPosition.getColumn() != 8;
+
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+
         //Up and Left Diagonal
+        while (up && left){
+            newPosition = new ChessPosition(newPosition.getRow()+1, newPosition.getColumn()-1);
+            boardSpace = board.getPiece(newPosition);
+            if (newPosition.getColumn() == 1){
+                left = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            if (newPosition.getRow() == 8){
+                up = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            else if (boardSpace != null){
+                if (boardSpace.getTeamColor() != queen.getTeamColor()){
+                    left = false;
+                    up = false;
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+                else{
+                    left = false;
+                    up = false;
+                }
+            }
+            else{
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+
+        up = myPosition.getRow() != 8;
+        left = myPosition.getColumn() != 1;
+
         //Up and Right Diagonal
+        while (up && right){
+            newPosition = new ChessPosition(newPosition.getRow()+1, newPosition.getColumn()+1);
+            boardSpace = board.getPiece(newPosition);
+            if (newPosition.getColumn() == 8){
+                right = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            if (newPosition.getRow() == 8){
+                up = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            else if (boardSpace != null){
+                if (boardSpace.getTeamColor() != queen.getTeamColor()){
+                    right = false;
+                    up = false;
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+                else{
+                    right = false;
+                    up = false;
+                }
+            }
+            else{
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+
+        right = myPosition.getColumn() != 8;
         //Down and Left Diagonal
+        while (down && left){
+            newPosition = new ChessPosition(newPosition.getRow()-1, newPosition.getColumn()-1);
+            boardSpace = board.getPiece(newPosition);
+            if (newPosition.getColumn() == 1){
+                left = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            if (newPosition.getRow() == 1){
+                down = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            else if (boardSpace != null){
+                if (boardSpace.getTeamColor() != queen.getTeamColor()){
+                    down = false;
+                    left = false;
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+                else{
+                    down = false;
+                    left = false;
+                }
+            }
+            else{
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
+        newPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        down = myPosition.getRow() != 1;
+
         //Down and Right Diagonal
+        while (down && right){
+            newPosition = new ChessPosition(newPosition.getRow()-1, newPosition.getColumn()+1);
+            boardSpace = board.getPiece(newPosition);
+            if (newPosition.getColumn() == 8){
+                right = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            if (newPosition.getRow() == 1){
+                down = false;
+                addValidMove(validMoves, myPosition, newPosition);
+                break;
+            }
+            else if (boardSpace != null){
+                if (boardSpace.getTeamColor() != queen.getTeamColor()){
+                    right = false;
+                    down = false;
+                    addValidMove(validMoves, myPosition, newPosition);
+                }
+                else{
+                    right = false;
+                    down = false;
+                }
+            }
+            else{
+                addValidMove(validMoves, myPosition, newPosition);
+            }
+        }
         return validMoves;
     }
 
