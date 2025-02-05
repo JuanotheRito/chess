@@ -53,6 +53,21 @@ public class ChessBoard {
 
         this.board[row - 1][col - 1] = piece;
     }
+
+    /**
+     * Removes a piece at the given position on the board, does nothing if there is no piece at the given position
+     *
+     * @param position the position to remove the piece from
+     */
+    public void removePiece(ChessPosition position){
+        int col = position.getColumn();
+        int row = position.getRow();
+
+        if (this.board[row-1][col-1] == null){
+            return;
+        }
+        this.board[row-1][col-1] = null;
+    }
     /**
      * Gets a chess piece on the chessboard
      *
@@ -69,6 +84,10 @@ public class ChessBoard {
         else{
             return null;
         }
+    }
+
+    public ChessPiece[][] getBoard() {
+        return board;
     }
 
     /**
