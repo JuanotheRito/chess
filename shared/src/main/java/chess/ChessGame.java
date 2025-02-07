@@ -68,14 +68,19 @@ public class ChessGame {
      */
     public boolean testMove(ChessMove move){
         boolean validMove = true;
+        ChessPiece enemyPiece = board.getPiece(move.getEndPosition());
         ChessPiece piece = board.getPiece(move.getStartPosition());
         board.removePiece(move.getStartPosition());
+        board.removePiece(move.getEndPosition());
         board.addPiece(move.getEndPosition(), piece);
         if (isInCheck(piece.getTeamColor())){
             validMove = false;
         }
         board.removePiece(move.getEndPosition());
         board.addPiece(move.getStartPosition(), piece);
+        if (enemyPiece!=null){
+            board.addPiece(move.getEndPosition(), enemyPiece);
+        }
         return validMove;
     }
     /**
