@@ -87,9 +87,9 @@ public class ChessGame {
         if(piece == null){
             throw new InvalidMoveException("There is no piece to move");
         }
-        boolean isValidMove = testMove(move);
+        ArrayList <ChessMove> validMoves = (ArrayList<ChessMove>) validMoves(move.getStartPosition());
         InvalidMoveException InvalidMove;
-        if (!isValidMove){
+        if (!validMoves.contains(move)){
             InvalidMove = new InvalidMoveException("Attempted move is not legal");
             throw InvalidMove;
         }
