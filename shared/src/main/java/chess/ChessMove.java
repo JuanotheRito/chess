@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public class ChessMove {
     private ChessPosition startPosition;
-
+    private boolean isCastle = false;
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -20,6 +20,12 @@ public class ChessMove {
         return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition) && promotionPiece == chessMove.promotionPiece;
     }
 
+    public boolean getCastle(){
+        return isCastle;
+    }
+    public void setCastle(){
+        this.isCastle = true;
+    }
     @Override
     public int hashCode() {
         return Objects.hash(startPosition, endPosition, promotionPiece);

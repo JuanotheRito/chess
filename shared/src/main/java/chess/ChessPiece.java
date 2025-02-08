@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class ChessPiece {
     private ChessGame.TeamColor pieceColor;
     private ChessPiece.PieceType type;
-
+    private boolean hasMoved = false;
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
@@ -65,6 +65,20 @@ public class ChessPiece {
      */
     public PieceType getPieceType() {
         return this.type;
+    }
+
+    /** Checks to see if the piece has moved
+     *
+     * @return True if the piece has moved, false if it has not
+     */
+    public boolean hasMoved() {
+        return !this.hasMoved;
+    }
+
+    /** Flags the piece as having moved*/
+
+    public void pieceMoved() {
+        this.hasMoved = true;
     }
 
     /**
@@ -320,6 +334,18 @@ public class ChessPiece {
                 addValidMove(validMoves, myPosition, newPosition);
             }
         }
+        //Castling
+        if (king.getTeamColor() == ChessGame.TeamColor.BLACK){
+            if (myPosition.getRow()!=8 || myPosition.getColumn()!=5){
+                king.pieceMoved();
+            }
+        }
+        if (king.getTeamColor() == ChessGame.TeamColor.WHITE){
+            if (myPosition.getRow()!=1 || myPosition.getColumn()!=5){
+                king.pieceMoved();
+            }
+        }
+
         return validMoves;
     }
 
