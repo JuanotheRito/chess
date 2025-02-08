@@ -81,6 +81,7 @@ public class ChessPiece {
         this.hasMoved = true;
     }
 
+
     /**
      * Adds a valid piece move to the specified ArrayList of ChessMoves
      *
@@ -101,11 +102,13 @@ public class ChessPiece {
      * @param promotionPieces Array of the possible pieces the pawn can be promoted to
      */
     private void addValidPawnMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition, ChessPosition newPosition, ChessPiece.PieceType[] promotionPieces) {
+        ChessMove validMove = new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), null);
         if (promotionPieces[0] == null) {
-            validMoves.add(new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), null));
+            validMoves.add(validMove);
         } else {
             for (PieceType promotionPiece : promotionPieces) {
-                validMoves.add(new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), promotionPiece));
+                validMove = new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), promotionPiece);
+                validMoves.add(validMove);
             }
         }
     }

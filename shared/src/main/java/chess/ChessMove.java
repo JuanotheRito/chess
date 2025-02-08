@@ -11,6 +11,7 @@ import java.util.Objects;
 public class ChessMove {
     private ChessPosition startPosition;
     private boolean isCastle = false;
+    private boolean isEnPassant = false;
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -26,6 +27,14 @@ public class ChessMove {
     public void setCastle(){
         this.isCastle = true;
     }
+
+    public boolean getEnPassant(){
+        return isEnPassant;
+    }
+    public void setEnPassant(){
+        this.isEnPassant = true;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(startPosition, endPosition, promotionPiece);
