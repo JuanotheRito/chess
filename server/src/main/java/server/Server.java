@@ -1,8 +1,9 @@
 package server;
 
-import dataaccess.DataAccessException;
+import dataaccess.*;
 import jdk.jshell.spi.ExecutionControl;
 import model.AuthData;
+import service.ClearService;
 import service.RegisterRequest;
 import service.UserService;
 import spark.*;
@@ -11,7 +12,8 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 
 public class Server {
-
+    UserDAO userDAO = new MemoryUserDAO();
+    AuthDAO authDAO = new MemoryAuthDAO();
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
@@ -20,7 +22,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
 
         //Spark.delete("/db",(req, res) -> ClearHandler(req, res));
-        Spark.post("/user", ((req, res) -> RegisterHandler(req, res)));
+        Spark.post("/user", (this::RegisterHandler));
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -34,31 +36,36 @@ public class Server {
         Spark.awaitStop();
     }
 
-    /*(public Object ClearHandler(Request req, Response res){
-        ClearService service = new ClearService();
+    public Object ClearHandler(Request req, Response res){
         try{
-            ClearService.clear();
+            ClearService.clear(userDAO, gameDAO, authDAO);
         }
         catch (DataAccessException e){
 
         }
         return "{}";
-    }*/
-    public Object RegisterHandler(Request req, Response res){
+    }
+    public Object RegisterHandler(Request req, Response res) {
         var serializer = new Gson();
-
-        var body = req.body();
-        var newRegister = serializer.fromJson(body, RegisterRequest.class);
-        Object result;
-        var service = new UserService();
+        Object result = null;
         try {
-            result = service.register(newRegister);
+            var body = req.body();
+            var newRegister = serializer.fromJson(body, RegisterRequest.class);
+            result = UserService.register(newRegister, userDAO, authDAO);
         }
-       // catch (DataAccessException e){
-
-        /*}*/ catch (ExecutionControl.NotImplementedException e) {
-            throw new RuntimeException(e);
+        catch (DataAccessException e){
+            result = String.format("Error: %s", e.getMessage());
+            res.status(400);
         }
+        catch (AlreadyTakenException e){
+            result = String.format("Error: %s", e.getMessage());
+            res.status(403);
+        }
+        catch (Exception e){
+            result = String.format("Error: %s", e.getMessage());
+            res.status(500);
+        }
+        result = serializer.toJson(result);
         return result;
     }
 }
