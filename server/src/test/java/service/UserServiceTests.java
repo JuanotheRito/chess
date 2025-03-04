@@ -109,7 +109,12 @@ class UserServiceTests {
             throw new RuntimeException(e);
         }
         authToken = register.authToken();
-        UserService.logout(authToken);
+        try {
+            UserService.logout(new LogoutRequest(authToken));
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
         LoginRequest login = new LoginRequest("CosmoCougar", "GoCougars!");
         try {
             authToken = UserService.login(login).authToken();
@@ -118,7 +123,7 @@ class UserServiceTests {
             throw new RuntimeException(e);
         }
         LogoutRequest test = new LogoutRequest(authToken);
-        LogoutResult expected = new LogoutRequest(true);
+        LogoutResult expected = new LogoutResult(true);
         LogoutResult actual = null;
         try{
             actual = UserService.logout(test);
@@ -141,10 +146,13 @@ class UserServiceTests {
             throw new RuntimeException(e);
         }
         authToken = register.authToken();
-        UserService.logout(authToken);
+        try{
+            UserService.logout(new LogoutRequest(authToken));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
         LogoutRequest test = new LogoutRequest(authToken);
-        LogoutResult expected = new LogoutRequest(true);
-        LogoutResult actual = null;
         assertThrows(DataAccessException.class, () -> UserService.logout(test));
     }
 }

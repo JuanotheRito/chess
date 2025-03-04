@@ -64,7 +64,18 @@ public class UserService {
     }
 
     public static LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException{
+        var authToken = logoutRequest.authToken();
 
+        AuthDAO authDAO = new MemoryAuthDAO();
+
+        LogoutResult result = new LogoutResult(false);
+        AuthData authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            throw new DataAccessException("Error: unauthorized");
+        }
+        authDAO.deleteAuth(authData);
+        result = new LogoutResult(true);
+        return result;
     }
 
     public static String generateToken() {

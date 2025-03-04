@@ -7,6 +7,9 @@ import service.*;
 import spark.Request;
 import spark.Response;
 
+import javax.xml.crypto.Data;
+import java.io.Reader;
+
 public class Handler {
     public static Object ClearHandler(Request req, Response res) {
         var serializer = new Gson();
@@ -56,6 +59,21 @@ public class Handler {
         catch (Exception e){
             result = new ErrorMessage((e.getMessage()));
             res.status(500);
+        }
+        return serializer.toJson(result);
+    }
+
+    public static Object LogoutHandler(Request req, Response res){
+        var serializer = new Gson();
+        Object result = null;
+        record ErrorMessage(String message){}
+        try{
+            var header = req.headers("Authorization");
+            var newLogout = new LogoutRequest(header);
+            result = UserService.logout(newLogout);
+        } catch (DataAccessException e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(401);
         }
         return serializer.toJson(result);
     }

@@ -33,4 +33,18 @@ public class MemoryAuthDAO implements AuthDAO {
         }
         return result;
     }
+
+    public void deleteAuth(AuthData authData){
+        try{
+            AuthData exists = getAuth(authData.authToken());
+            if (exists == null) {
+                throw new DataAccessException("Error: unauthorized");
+            }
+            else{
+                MemoryDatabase.deleteAuthData(authData);
+            }
+        } catch (DataAccessException e){
+            throw new RuntimeException(e);
+        }
+    }
 }

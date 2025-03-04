@@ -5,6 +5,7 @@ import model.GameData;
 import model.UserData;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MemoryDatabase {
     private static MemoryDatabase instance = new MemoryDatabase();
@@ -50,5 +51,9 @@ public class MemoryDatabase {
     }
     public static void addAuthData(AuthData authData){
         authDatabase.add(authData);
+    }
+
+    public static void deleteAuthData(AuthData delete){
+        authDatabase.removeIf(authData -> Objects.equals(authData.authToken(), delete.authToken()));
     }
 }
