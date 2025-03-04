@@ -3,12 +3,14 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
+import model.GameData;
 import service.*;
 import spark.Request;
 import spark.Response;
 
 import javax.xml.crypto.Data;
 import java.io.Reader;
+import java.util.ArrayList;
 
 public class Handler {
     public static Object ClearHandler(Request req, Response res) {
@@ -99,5 +101,29 @@ public class Handler {
             res.status(500);
         }
         return serializer.toJson(result);
+    }
+
+    public static Object ListHandler(Request req, Response res){
+        var serializer = new Gson();
+        Object result;
+        record ErrorMessage(String message){}
+        record GameInfo(int gameID, String whiteUsername, String blackUsername, String gameName){}
+        record GameInfoList(ArrayList<GameInfo> games){}
+        ArrayList<GameInfo> infoList= new ArrayList<>();
+        try{
+            var header = req.headers("Authorization");
+            var newList = new GameListRequest(header);
+            result = GameService.listGames(newList);
+            for (GameData gameData: ((GameListResult) result).games()){
+                infoList.add(new GameInfo(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName()));
+            }
+        } catch (DataAccessException e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(401);
+        } catch (Exception e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(500);
+        }
+        return serializer.toJson(new GameInfoList(infoList));
     }
 }

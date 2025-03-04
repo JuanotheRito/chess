@@ -92,7 +92,7 @@ class GameServiceTests {
         catch (Exception e){
             throw new RuntimeException(e);
         }
-        expectedList.add(new GameData(1, null, null, "GG", actual.gameList().getFirst().game()));
+        expectedList.add(new GameData(1, null, null, "GG", actual.games().getFirst().game()));
         GameListResult expected = new GameListResult(expectedList);
         assertEquals(expected, actual);
         ClearService.clear();
