@@ -9,8 +9,6 @@ import service.*;
 import spark.Request;
 import spark.Response;
 
-import javax.xml.crypto.Data;
-import java.io.Reader;
 import java.util.ArrayList;
 
 public class Handler {
@@ -28,7 +26,7 @@ public class Handler {
 
     public static Object RegisterHandler(Request req, Response res) {
         var serializer = new Gson();
-        Object result = null;
+        Object result;
         record ErrorMessage(String message){}
         try {
             var body = req.body();
@@ -46,7 +44,7 @@ public class Handler {
 
     public static Object LoginHandler(Request req, Response res){
         var serializer = new Gson();
-        Object result = null;
+        Object result;
         record ErrorMessage(String message){}
         try{
             var body = req.body();
@@ -65,7 +63,7 @@ public class Handler {
 
     public static Object LogoutHandler(Request req, Response res){
         var serializer = new Gson();
-        Object result = null;
+        Object result;
         record ErrorMessage(String message){}
         try{
             var header = req.headers("Authorization");
@@ -80,7 +78,7 @@ public class Handler {
 
     public static Object CreateHandler(Request req, Response res){
         var serializer = new Gson();
-        Object result = null;
+        Object result;
         record ErrorMessage(String message){}
         record GameName(String gameName){}
         try{
@@ -118,9 +116,11 @@ public class Handler {
         } catch (DataAccessException e){
             result = new ErrorMessage((e.getMessage()));
             res.status(401);
+            return serializer.toJson(result);
         } catch (Exception e){
             result = new ErrorMessage((e.getMessage()));
             res.status(500);
+            return serializer.toJson(result);
         }
         return serializer.toJson(new GameInfoList(infoList));
     }
