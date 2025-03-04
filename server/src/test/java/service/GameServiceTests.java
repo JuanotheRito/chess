@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
@@ -95,6 +96,113 @@ class GameServiceTests {
         expectedList.add(new GameData(1, null, null, "GG", actual.games().getFirst().game()));
         GameListResult expected = new GameListResult(expectedList);
         assertEquals(expected, actual);
+        ClearService.clear();
+    }
+
+    @Test
+    void joinGameSuccessfully(){
+        try {
+            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult loginResult = null;
+        LoginRequest login = new LoginRequest("CosmoCougar", "GoCougars!");
+        try {
+            loginResult = UserService.login(login);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        String authToken = loginResult.authToken();
+        CreateRequest create = new CreateRequest(authToken, "GG");
+        try {
+            GameService.createGame(create);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        JoinRequest test = new JoinRequest(authToken, WHITE, 1);
+        JoinResult actual = null;
+        JoinResult expected = new JoinResult(WHITE, 1);
+        try{
+           actual=GameService.joinGame(test);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        assertEquals(expected, actual);
+        ClearService.clear();
+
+    }
+    @Test
+    void colorAlreadyTaken(){
+        try {
+            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult loginResult = null;
+        LoginRequest login = new LoginRequest("CosmoCougar", "GoCougars!");
+        try {
+            loginResult = UserService.login(login);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        String authToken = loginResult.authToken();
+        CreateRequest create = new CreateRequest(authToken, "GG");
+        try {
+            GameService.createGame(create);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        JoinRequest test = new JoinRequest(authToken, WHITE, 1);
+        try{
+            GameService.joinGame(test);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        assertThrows(AlreadyTakenException.class, () -> GameService.joinGame(test));
+        ClearService.clear();
+    }
+    @Test
+    void invalidGame(){
+        try {
+            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult loginResult = null;
+        LoginRequest login = new LoginRequest("CosmoCougar", "GoCougars!");
+        try {
+            loginResult = UserService.login(login);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        String authToken = loginResult.authToken();
+        CreateRequest create = new CreateRequest(authToken, "GG");
+        try {
+            GameService.createGame(create);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        JoinRequest first = new JoinRequest(authToken, WHITE, 1);
+        try{
+            GameService.joinGame(test);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        JoinRequest test = new JoinRequest(authToken, BLACK, 2);
+        assertThrows(DataAccessException.class, () -> GameService.joinGame(test));
         ClearService.clear();
     }
 }
