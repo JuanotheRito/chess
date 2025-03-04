@@ -4,10 +4,6 @@ import dataaccess.*;
 import spark.*;
 
 public class Server {
-    UserDAO userDAO = new MemoryUserDAO();
-    GameDAO gameDAO = new MemoryGameDAO();
-    AuthDAO authDAO = new MemoryAuthDAO();
-
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
