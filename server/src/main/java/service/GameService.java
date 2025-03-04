@@ -5,8 +5,6 @@ import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 
-import javax.xml.crypto.Data;
-
 public class GameService {
     public static boolean isNull(Object... objects) {
         for (Object object : objects) {

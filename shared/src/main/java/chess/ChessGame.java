@@ -290,10 +290,10 @@ public class ChessGame {
             throw new InvalidMoveException(message);
         }
         ArrayList<ChessMove> validMoves = (ArrayList<ChessMove>) validMoves(move.getStartPosition());
-        InvalidMoveException InvalidMove;
+        InvalidMoveException invalidMove;
         if (!validMoves.contains(move)) {
-            InvalidMove = new InvalidMoveException("Attempted move is not legal");
-            throw InvalidMove;
+            invalidMove = new InvalidMoveException("Attempted move is not legal");
+            throw invalidMove;
         } else {
             for (ChessMove validMove : validMoves) {
                 if (validMove.equals(move)) {

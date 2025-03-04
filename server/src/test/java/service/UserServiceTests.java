@@ -2,10 +2,7 @@ package service;
 
 import dataaccess.*;
 import jdk.jshell.spi.ExecutionControl;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.Test;
-
-import javax.xml.crypto.Data;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
+import dataaccess.EmptyFieldException;
 import model.GameData;
 import service.*;
 import spark.Request;
@@ -12,7 +13,7 @@ import spark.Response;
 import java.util.ArrayList;
 
 public class Handler {
-    public static Object ClearHandler(Request req, Response res) {
+    public static Object clearHandler(Request req, Response res) {
         var serializer = new Gson();
         Object result  = null;
         try {
@@ -24,7 +25,7 @@ public class Handler {
         return serializer.toJson(result);
     }
 
-    public static Object RegisterHandler(Request req, Response res) {
+    public static Object registerHandler(Request req, Response res) {
         var serializer = new Gson();
         Object result;
         record ErrorMessage(String message){}
@@ -42,7 +43,7 @@ public class Handler {
         return serializer.toJson(result);
     }
 
-    public static Object LoginHandler(Request req, Response res){
+    public static Object loginHandler(Request req, Response res){
         var serializer = new Gson();
         Object result;
         record ErrorMessage(String message){}
@@ -61,7 +62,7 @@ public class Handler {
         return serializer.toJson(result);
     }
 
-    public static Object LogoutHandler(Request req, Response res){
+    public static Object logoutHandler(Request req, Response res){
         var serializer = new Gson();
         Object result;
         record ErrorMessage(String message){}
@@ -76,7 +77,7 @@ public class Handler {
         return serializer.toJson(result);
     }
 
-    public static Object CreateHandler(Request req, Response res){
+    public static Object createHandler(Request req, Response res){
         var serializer = new Gson();
         Object result;
         record ErrorMessage(String message){}
@@ -99,7 +100,7 @@ public class Handler {
         return serializer.toJson(result);
     }
 
-    public static Object ListHandler(Request req, Response res){
+    public static Object listHandler(Request req, Response res){
         var serializer = new Gson();
         Object result;
         record ErrorMessage(String message){}
@@ -125,7 +126,7 @@ public class Handler {
         return serializer.toJson(new GameInfoList(infoList));
     }
 
-    public static Object JoinHandler(Request req, Response res){
+    public static Object joinHandler(Request req, Response res){
         var serializer = new Gson();
         Object result = null;
         record ErrorMessage(String message){}
