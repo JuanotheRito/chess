@@ -5,14 +5,13 @@ import model.UserData;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class MemoryUserDAO implements UserDAO{
-    ArrayList<UserData> memoryDatabase = new ArrayList<>();
+public class MemoryUserDAO implements UserDAO {
 
     @Override
-    public UserData getUser(String username){
+    public UserData getUser(String username) {
         UserData user = null;
-        for(UserData userData:memoryDatabase){
-            if (Objects.equals(userData.username(), username)){
+        for (UserData userData : MemoryDatabase.getUserData()) {
+            if (Objects.equals(userData.username(), username)) {
                 user = userData;
                 break;
             }
@@ -21,9 +20,12 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public void createUser(UserData userData){
+    public void createUser(UserData userData) {
+        MemoryDatabase.addUserData(userData);
+    }
 
-        this.memoryDatabase.add(userData);
+    public void clear(){
+        MemoryDatabase.clearUserData();
     }
 
 

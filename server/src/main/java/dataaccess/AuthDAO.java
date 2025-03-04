@@ -2,8 +2,12 @@ package dataaccess;
 
 import model.AuthData;
 
+import java.util.ArrayList;
+
 public interface AuthDAO {
-    boolean deleteAll();
+    public void clear();
+
     public void createAuth(AuthData authData);
+
     public AuthData getAuth(String authToken);
 }
