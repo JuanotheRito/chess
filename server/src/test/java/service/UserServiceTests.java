@@ -97,4 +97,54 @@ class UserServiceTests {
         assertThrows(DataAccessException.class, () -> UserService.login(test));
         ClearService.clear();
     }
+
+    @Test
+    void logoutSuccessful(){
+        String authToken = null;
+        RegisterResult register = null;
+        try {
+             register = UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        authToken = register.authToken();
+        UserService.logout(authToken);
+        LoginRequest login = new LoginRequest("CosmoCougar", "GoCougars!");
+        try {
+            authToken = UserService.login(login).authToken();
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        LogoutRequest test = new LogoutRequest(authToken);
+        LogoutResult expected = new LogoutRequest(true);
+        LogoutResult actual = null;
+        try{
+            actual = UserService.logout(test);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        assertEquals(actual, expected);
+        assertEquals(0, MemoryDatabase.getAuthData().size());
+    }
+
+    @Test
+    void notLoggedIn(){
+        String authToken = null;
+        RegisterResult register = null;
+        try {
+            register = UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        authToken = register.authToken();
+        UserService.logout(authToken);
+        LogoutRequest test = new LogoutRequest(authToken);
+        LogoutResult expected = new LogoutRequest(true);
+        LogoutResult actual = null;
+        assertThrows(DataAccessException.class, () -> UserService.logout(test));
+    }
 }

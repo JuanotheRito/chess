@@ -63,6 +63,10 @@ public class UserService {
         return result;
     }
 
+    public static LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException{
+
+    }
+
     public static String generateToken() {
         return UUID.randomUUID().toString();
     }
