@@ -1,15 +1,11 @@
 package service;
 
 import dataaccess.*;
-import jdk.jshell.spi.ExecutionControl;
 import model.AuthData;
 import model.UserData;
 
-import javax.xml.crypto.Data;
+import java.util.Objects;
 import java.util.UUID;
-
-record RegisterResult(String username, String authToken) {
-}
 
 public class UserService {
     public static boolean isNull(Object... objects) {
@@ -43,6 +39,27 @@ public class UserService {
         } else {
             throw new AlreadyTakenException("Error: already taken");
         }
+        return result;
+    }
+
+    public static LoginResult login(LoginRequest loginRequest) throws DataAccessException{
+        var username = loginRequest.username();
+        var password = loginRequest.password();
+
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+
+        LoginResult result = null;
+        UserData user = userDAO.getUser(username);
+        if (user == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        if (!Objects.equals(user.password(), password)){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        AuthData authData = new AuthData(generateToken(), username);
+        authDAO.createAuth(authData);
+        result = new LoginResult(username, authData.authToken());
         return result;
     }
 

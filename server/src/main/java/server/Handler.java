@@ -3,9 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
-import service.ClearService;
-import service.RegisterRequest;
-import service.UserService;
+import service.*;
 import spark.Request;
 import spark.Response;
 
@@ -38,6 +36,25 @@ public class Handler {
             res.status(403);
         } catch (Exception e) {
             result = new ErrorMessage(e.getMessage());
+            res.status(500);
+        }
+        return serializer.toJson(result);
+    }
+
+    public static Object LoginHandler(Request req, Response res){
+        var serializer = new Gson();
+        Object result = null;
+        record ErrorMessage(String message){}
+        try{
+            var body = req.body();
+            var newLogin = serializer.fromJson(body, LoginRequest.class);
+            result = UserService.login(newLogin);
+        } catch (DataAccessException e) {
+            result = new ErrorMessage((e.getMessage()));
+            res.status(401);
+        }
+        catch (Exception e){
+            result = new ErrorMessage((e.getMessage()));
             res.status(500);
         }
         return serializer.toJson(result);

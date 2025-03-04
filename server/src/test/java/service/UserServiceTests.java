@@ -17,7 +17,6 @@ class UserServiceTests {
         UserDAO userDAO = new MemoryUserDAO();
 
         RegisterRequest test = new RegisterRequest("CosmoCougar", "GoCougs", "cosmocougar@byu.edu");
-        UserService testService = new UserService();
         RegisterResult result = null;
         try {
             result = UserService.register(test);
@@ -36,7 +35,6 @@ class UserServiceTests {
         UserDAO userDAO = new MemoryUserDAO();
 
         RegisterRequest test = new RegisterRequest("CosmoCougar", "GoCougs", "cosmocougar@byu.edu");
-        UserService testService = new UserService();
         RegisterResult result = null;
         try {
             result = UserService.register(test);
@@ -52,11 +50,51 @@ class UserServiceTests {
     void badRegisterRequest() throws DataAccessException {
         AuthDAO authDAO = new MemoryAuthDAO();
         UserDAO userDAO = new MemoryUserDAO();
-
         RegisterRequest test = new RegisterRequest("CosmoCougar", null, "cosmocougar@byu.edu");
-        UserService testService = new UserService();
         RegisterResult result = null;
         assertThrows(DataAccessException.class, () -> UserService.register(test));
+        ClearService.clear();
+    }
+
+    @Test
+    void loginSuccessful(){
+        try {
+            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult actual = null;
+        LoginRequest test = new LoginRequest("CosmoCougar", "GoCougars!");
+        try {
+            actual = UserService.login(test);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult expected = new LoginResult("CosmoCougar", actual.authToken());
+
+        assertEquals(expected, actual);
+        ClearService.clear();
+    }
+    @Test
+    void incorrectPassword(){
+        try {
+            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult actual = null;
+        LoginRequest test = new LoginRequest("CosmoCougar", "GoCougas!");
+        assertThrows(DataAccessException.class, () -> UserService.login(test));
+        ClearService.clear();
+    }
+    @Test
+    void notRegistered(){
+        LoginResult actual = null;
+        LoginRequest test = new LoginRequest("CosmoCougar", "GoCougars!");
+        assertThrows(DataAccessException.class, () -> UserService.login(test));
         ClearService.clear();
     }
 }
