@@ -1,8 +1,10 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import service.GameService;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -41,6 +43,15 @@ public class MemoryDatabase {
         return gameDatabase;
     }
 
+    public static GameData getGame(int gameID){
+        for (GameData gameData: gameDatabase){
+            if (gameData.gameID() == gameID){
+                return gameData;
+            }
+        }
+        return null;
+    }
+
     public static ArrayList<AuthData> getAuthData(){
         return authDatabase;
     }
@@ -62,5 +73,23 @@ public class MemoryDatabase {
 
     public static void deleteAuthData(AuthData delete){
         authDatabase.removeIf(authData -> Objects.equals(authData.authToken(), delete.authToken()));
+    }
+
+    public static void setPlayer(int gameID, String username, ChessGame.TeamColor teamColor){
+        int index = 0;
+        for (GameData oldGame:gameDatabase){
+            if (oldGame.gameID() == gameID){
+                if (teamColor == ChessGame.TeamColor.WHITE){
+                    gameDatabase.remove(oldGame);
+                    gameDatabase.add(oldGame.setWhiteUsername(username));
+                    break;
+                }
+                if (teamColor == ChessGame.TeamColor.BLACK){
+                    gameDatabase.remove(oldGame);
+                    gameDatabase.add(oldGame.setWhiteUsername(username));
+                    break;
+                }
+            }
+        }
     }
 }

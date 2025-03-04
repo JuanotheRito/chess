@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
+import static chess.ChessGame.TeamColor.BLACK;
+import static chess.ChessGame.TeamColor.WHITE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameServiceTests {
@@ -196,13 +198,13 @@ class GameServiceTests {
         }
         JoinRequest first = new JoinRequest(authToken, WHITE, 1);
         try{
-            GameService.joinGame(test);
+            GameService.joinGame(first);
         }
         catch (Exception e){
             throw new RuntimeException(e);
         }
         JoinRequest test = new JoinRequest(authToken, BLACK, 2);
-        assertThrows(DataAccessException.class, () -> GameService.joinGame(test));
+        assertThrows(EmptyFieldException.class, () -> GameService.joinGame(test));
         ClearService.clear();
     }
 }
