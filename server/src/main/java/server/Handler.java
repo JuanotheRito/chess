@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
@@ -33,15 +34,12 @@ public class Handler {
             var body = req.body();
             var newRegister = serializer.fromJson(body, RegisterRequest.class);
             result = UserService.register(newRegister);
-        } catch (DataAccessException e) {
+        } catch (DataAccessException | EmptyFieldException e) {
             result = new ErrorMessage(e.getMessage());
             res.status(400);
         } catch (AlreadyTakenException e) {
             result = new ErrorMessage(e.getMessage());
             res.status(403);
-        } catch (Exception e) {
-            result = new ErrorMessage(e.getMessage());
-            res.status(500);
         }
         return serializer.toJson(result);
     }
@@ -125,5 +123,31 @@ public class Handler {
             res.status(500);
         }
         return serializer.toJson(new GameInfoList(infoList));
+    }
+
+    public static Object JoinHandler(Request req, Response res){
+        var serializer = new Gson();
+        Object result = null;
+        record ErrorMessage(String message){}
+        record JoinInfo(ChessGame.TeamColor playerColor, int gameID){}
+        try {
+            var header = req.headers("Authorization");
+            var body = serializer.fromJson(req.body(), JoinInfo.class);
+            var newJoin = new JoinRequest(header, body.playerColor, body.gameID);
+            GameService.joinGame(newJoin);
+        } catch (DataAccessException e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(401);
+        } catch (EmptyFieldException e){
+            result = new ErrorMessage ((e.getMessage()));
+            res.status(400);
+        } catch (AlreadyTakenException e){
+            result = new ErrorMessage ((e.getMessage()));
+            res.status(403);
+        } catch (Exception e){
+            result = new ErrorMessage ((e.getMessage()));
+            res.status(500);
+        }
+        return serializer.toJson(result);
     }
 }

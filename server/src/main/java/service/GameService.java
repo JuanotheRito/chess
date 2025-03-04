@@ -52,8 +52,11 @@ public class GameService {
         JoinResult result = null;
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
-
-        String username = authDAO.getAuth(authToken).username();
+        var retrievedAuth = authDAO.getAuth(authToken);
+        if (retrievedAuth == null){
+            throw new DataAccessException ("Error: unauthorized");
+        }
+        String username = retrievedAuth.username();
 
         GameData gameData = getGameData(authToken, gameID, playerColor);
         if (playerColor == ChessGame.TeamColor.WHITE){

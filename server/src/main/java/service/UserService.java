@@ -26,7 +26,7 @@ public class UserService {
         AuthDAO authDAO = new MemoryAuthDAO();
 
         if (isNull(username, password, email)) {
-            throw new DataAccessException("Error: bad request");
+            throw new EmptyFieldException("Error: bad request");
         }
         RegisterResult result = null;
         UserData user = userDAO.getUser(username);

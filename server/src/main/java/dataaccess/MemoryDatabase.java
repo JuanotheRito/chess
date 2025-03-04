@@ -86,7 +86,7 @@ public class MemoryDatabase {
                 }
                 if (teamColor == ChessGame.TeamColor.BLACK){
                     gameDatabase.remove(oldGame);
-                    gameDatabase.add(oldGame.setWhiteUsername(username));
+                    gameDatabase.add(oldGame.setBlackUsername(username));
                     break;
                 }
             }
