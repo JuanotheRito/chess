@@ -23,7 +23,7 @@ class GameServiceTests {
             throw new RuntimeException(e);
         }
         CreateRequest test = new CreateRequest(loginResult.authToken(), "GG");
-        CreateResult expected = new CreateResult("GG");
+        CreateResult expected = new CreateResult(1);
         CreateResult actual = null;
         try {
             actual = GameService.createGame(test);
@@ -34,6 +34,7 @@ class GameServiceTests {
         assertEquals(expected, actual);
         ClearService.clear();
     }
+    @Test
     void invalidAuthorization(){
         try {
             UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
@@ -49,9 +50,8 @@ class GameServiceTests {
         catch (Exception e){
             throw new RuntimeException(e);
         }
-        CreateRequest test = new CreateRequest(1, "GG");
+        CreateRequest test = new CreateRequest("1", "GG");
         assertThrows(DataAccessException.class, () -> GameService.createGame(test));
-
-    }
+        ClearService.clear();
     }
 }

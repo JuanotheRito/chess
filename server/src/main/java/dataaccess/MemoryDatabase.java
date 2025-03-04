@@ -12,6 +12,7 @@ public class MemoryDatabase {
     private static ArrayList<UserData> userDatabase= new ArrayList<>();
     private static ArrayList<GameData> gameDatabase = new ArrayList<>();
     private static ArrayList<AuthData> authDatabase = new ArrayList<>();
+    private static int nextGameID = 1;
 
     private MemoryDatabase(){}
 
@@ -25,6 +26,7 @@ public class MemoryDatabase {
 
     public static void clearGameData(){
         gameDatabase = new ArrayList<>();
+        nextGameID = 1;
     }
 
     public static void clearAuthData(){
@@ -43,11 +45,16 @@ public class MemoryDatabase {
         return authDatabase;
     }
 
+    public static int getNextGameID(){
+        return nextGameID;
+    }
+
     public static void addUserData(UserData userData){
         userDatabase.add(userData);
     }
     public static void addGameData(GameData gameData){
         gameDatabase.add(gameData);
+        nextGameID++;
     }
     public static void addAuthData(AuthData authData){
         authDatabase.add(authData);

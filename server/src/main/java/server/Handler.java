@@ -77,4 +77,27 @@ public class Handler {
         }
         return serializer.toJson(result);
     }
+
+    public static Object CreateHandler(Request req, Response res){
+        var serializer = new Gson();
+        Object result = null;
+        record ErrorMessage(String message){}
+        record GameName(String gameName){}
+        try{
+            var header = req.headers("Authorization");
+            GameName body = serializer.fromJson(req.body(), GameName.class);
+            var newCreate = new CreateRequest(header, body.gameName);
+            result = GameService.createGame(newCreate);
+        } catch (DataAccessException e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(401);
+        } catch (EmptyFieldException e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(400);
+        } catch (Exception e){
+            result = new ErrorMessage((e.getMessage()));
+            res.status(500);
+        }
+        return serializer.toJson(result);
+    }
 }
