@@ -15,4 +15,8 @@ public class MemoryGameDAO implements GameDAO {
         MemoryDatabase.addGameData(newGame);
         return newGame;
     }
+
+    public ArrayList<GameData> getGames(){
+        return MemoryDatabase.getGameData();
+    }
 }

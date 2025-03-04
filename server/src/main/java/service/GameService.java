@@ -15,8 +15,18 @@ public class GameService {
         }
         return false;
     }
-    public static GameListResult listGames(GameListRequest listRequest){
-        return null;
+    public static GameListResult listGames(GameListRequest listRequest) throws DataAccessException {
+        var authToken = listRequest.authToken();
+
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+
+        AuthData authData = authDAO.getAuth(authToken);
+        if (authData == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+
+        return new GameListResult(gameDAO.getGames());
     }
     public static CreateResult createGame(CreateRequest createRequest) throws DataAccessException {
         var authToken = createRequest.authToken();

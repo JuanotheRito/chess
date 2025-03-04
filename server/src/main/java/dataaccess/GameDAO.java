@@ -10,4 +10,6 @@ public interface GameDAO {
     public void clear();
 
     public GameData createGame(String gameName);
+
+    public ArrayList<GameData> getGames();
 }

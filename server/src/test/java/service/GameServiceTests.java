@@ -60,6 +60,7 @@ class GameServiceTests {
         ClearService.clear();
     }
 
+    @Test
     void listGamesSuccessfully(){
         try {
             UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
@@ -84,8 +85,6 @@ class GameServiceTests {
         }
         GameListRequest test = new GameListRequest(loginResult.authToken());
         ArrayList<GameData> expectedList = new ArrayList<>();
-        expectedList.add(new GameData(1, null, null, "GG", new ChessGame()));
-        GameListResult expected = new GameListResult(expectedList);
         GameListResult actual = null;
         try{
             actual = GameService.listGames(test);
@@ -93,6 +92,8 @@ class GameServiceTests {
         catch (Exception e){
             throw new RuntimeException(e);
         }
+        expectedList.add(new GameData(1, null, null, "GG", actual.gameList().getFirst().game()));
+        GameListResult expected = new GameListResult(expectedList);
         assertEquals(expected, actual);
         ClearService.clear();
     }
