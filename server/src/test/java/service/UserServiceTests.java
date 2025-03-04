@@ -52,7 +52,7 @@ class UserServiceTests {
         UserDAO userDAO = new MemoryUserDAO();
         RegisterRequest test = new RegisterRequest("CosmoCougar", null, "cosmocougar@byu.edu");
         RegisterResult result = null;
-        assertThrows(DataAccessException.class, () -> UserService.register(test));
+        assertThrows(EmptyFieldException.class, () -> UserService.register(test));
         ClearService.clear();
     }
 
@@ -133,6 +133,7 @@ class UserServiceTests {
         }
         assertEquals(actual, expected);
         assertEquals(0, MemoryDatabase.getAuthData().size());
+        ClearService.clear();
     }
 
     @Test
@@ -154,5 +155,6 @@ class UserServiceTests {
         }
         LogoutRequest test = new LogoutRequest(authToken);
         assertThrows(DataAccessException.class, () -> UserService.logout(test));
+        ClearService.clear();
     }
 }
