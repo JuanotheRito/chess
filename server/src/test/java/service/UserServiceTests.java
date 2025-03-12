@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceTests {
 
     @Test
-    void registerSuccess() throws ExecutionControl.NotImplementedException {
+    void registerSuccess(){
         AuthDAO authDAO = new MemoryAuthDAO();
         UserDAO userDAO = new MemoryUserDAO();
 
