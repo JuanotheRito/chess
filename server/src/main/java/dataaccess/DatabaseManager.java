@@ -33,10 +33,14 @@ public class DatabaseManager {
         }
     }
 
+    public static void setupDatabase() throws DataAccessException {
+        createDatabase();
+    }
+
     /**
      * Creates the database if it does not already exist.
      */
-    public static void createDatabase() throws DataAccessException {
+    static void createDatabase() throws DataAccessException {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
@@ -60,11 +64,41 @@ public class DatabaseManager {
      * }
      * </code>
      */
-    public static Connection getConnection() throws DataAccessException {
+    static Connection getConnection() throws DataAccessException {
         try {
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
             conn.setCatalog(DATABASE_NAME);
             return conn;
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static void clearAuthData() throws DataAccessException {
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("DROP TABLE authData;")){
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static void clearGameData() throws DataAccessException {
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("DROP TABLE gameData;")){
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static void clearUserData() throws DataAccessException {
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("DROP TABLE userData;")){
+                preparedStatement.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }

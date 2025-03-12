@@ -4,19 +4,11 @@ import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
-import model.UserData;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.ClearService;
-import service.LoginRequest;
 import service.RegisterRequest;
 import service.UserService;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -25,7 +17,7 @@ public class ClearSQLTests {
     public static RegisterRequest testRegister = new RegisterRequest("CosmoCougar", "GoCougs!", "cosmocougar@byu.edu");
     @BeforeEach
     public void createDatabase() throws DataAccessException{
-        DatabaseManager.createDatabase();
+        DatabaseManager.setupDatabase();
     }
 
     @Test
@@ -33,6 +25,6 @@ public class ClearSQLTests {
         UserDAO userDAO = new SQLUserDAO();
         UserService.register(testRegister);
         ClearService.clear();
-        assertThrows(Exception.class, () -> userDAO.getUser(testRegister.username()));
+        assertThrows(DataAccessException.class, () -> userDAO.getUser(testRegister.username()));
     }
 }

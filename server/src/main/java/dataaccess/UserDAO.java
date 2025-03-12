@@ -5,7 +5,7 @@ import model.UserData;
 import java.util.ArrayList;
 
 public interface UserDAO {
-    public void clear();
+    public void clear() throws DataAccessException;
 
     public UserData getUser(String username);
 

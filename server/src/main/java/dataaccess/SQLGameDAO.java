@@ -6,8 +6,8 @@ import model.GameData;
 import java.util.ArrayList;
 
 public class SQLGameDAO implements GameDAO{
-    public void clear(){
-
+    public void clear() throws DataAccessException {
+        DatabaseManager.clearGameData();
     }
 
     public GameData createGame(String gameName){
