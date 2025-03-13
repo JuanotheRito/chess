@@ -101,7 +101,8 @@ public class ChessPiece {
      * @param newPosition     Position of the pawn after the given move is executed
      * @param promotionPieces Array of the possible pieces the pawn can be promoted to
      */
-    private void addValidPawnMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition, ChessPosition newPosition, ChessPiece.PieceType[] promotionPieces) {
+    private void addValidPawnMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition,
+                                  ChessPosition newPosition, ChessPiece.PieceType[] promotionPieces) {
         ChessMove validMove = new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), null);
         if (promotionPieces[0] == null) {
             validMoves.add(validMove);

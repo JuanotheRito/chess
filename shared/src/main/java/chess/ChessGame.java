@@ -52,6 +52,7 @@ public class ChessGame {
     public ChessMove getPrevious(){
         return this.previous;
     }
+
     public void clearPrevious(){
         this.previous = null;
     }
@@ -142,7 +143,9 @@ public class ChessGame {
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN){
             if (piece.getTeamColor() == TeamColor.WHITE && startPosition.getRow() == 5) {
                 //Left En Passant
-                ChessMove passant = new ChessMove(startPosition, new ChessPosition((startPosition.getRow()) + 1, (startPosition.getColumn() - 1)), null);
+                ChessMove passant = new ChessMove(startPosition,
+                        new ChessPosition((startPosition.getRow()) + 1,
+                                (startPosition.getColumn() - 1)), null);
                 ChessMove previousCheck = new ChessMove (
                         new ChessPosition(startPosition.getRow()+2, startPosition.getColumn()-1),
                         new ChessPosition(startPosition.getRow(), startPosition.getColumn()-1),
@@ -195,12 +198,11 @@ public class ChessGame {
                         }
                     }
                 }
-
             }
-
             if (piece.getTeamColor() == TeamColor.BLACK && startPosition.getRow() == 4) {
                 //Left En Passant
-                ChessMove passant = new ChessMove(startPosition, new ChessPosition((startPosition.getRow()) - 1, (startPosition.getColumn() - 1)), null);
+                ChessMove passant = new ChessMove(startPosition, new ChessPosition((startPosition.getRow()) - 1,
+                        (startPosition.getColumn() - 1)), null);
                 ChessMove previousCheck = new ChessMove (
                         new ChessPosition(startPosition.getRow()-2, startPosition.getColumn()-1),
                         new ChessPosition(startPosition.getRow(), startPosition.getColumn()-1),

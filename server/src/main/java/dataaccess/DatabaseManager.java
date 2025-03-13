@@ -235,7 +235,10 @@ public class DatabaseManager {
 
     public static GameData createGame(String gameName) throws DataAccessException {
         try (var conn = getConnection()){
-            try(var preparedStatement = conn.prepareStatement("INSERT INTO gameData (whiteUsername, blackUsername, gameName, game) VALUES(null, null, ?, ?)", Statement.RETURN_GENERATED_KEYS)){
+            try(var preparedStatement = conn.prepareStatement("INSERT INTO gameData " +
+                    "(whiteUsername, blackUsername, gameName, game) VALUES(null, null, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS)){
+
                 preparedStatement.setString(1, gameName);
                 Gson serializer = new Gson();
                 var json = serializer.toJson(new ChessGame());
@@ -244,12 +247,12 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
 
                 var resultSet = preparedStatement.getGeneratedKeys();
-                var ID = 0;
+                var id = 0;
                 if (resultSet.next()){
-                    ID = resultSet.getInt(1);
+                    id = resultSet.getInt(1);
                 }
 
-                return new GameData(ID, null, null, gameName, serializer.fromJson(json, ChessGame.class));
+                return new GameData(id, null, null, gameName, serializer.fromJson(json, ChessGame.class));
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
