@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserServiceTests {
 
     @Test
-    void registerSuccess(){
+    void registerSuccess() throws DataAccessException {
         AuthDAO authDAO = new MemoryAuthDAO();
         UserDAO userDAO = new MemoryUserDAO();
 
@@ -27,7 +27,7 @@ class UserServiceTests {
     }
 
     @Test
-    void registerDuplicate() throws AlreadyTakenException {
+    void registerDuplicate() throws AlreadyTakenException, DataAccessException {
         AuthDAO authDAO = new MemoryAuthDAO();
         UserDAO userDAO = new MemoryUserDAO();
 
@@ -54,7 +54,7 @@ class UserServiceTests {
     }
 
     @Test
-    void loginSuccessful(){
+    void loginSuccessful() throws DataAccessException {
         try {
             UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
         }
@@ -75,7 +75,7 @@ class UserServiceTests {
         ClearService.clear();
     }
     @Test
-    void incorrectPassword(){
+    void incorrectPassword() throws DataAccessException {
         try {
             UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
         }
@@ -88,7 +88,7 @@ class UserServiceTests {
         ClearService.clear();
     }
     @Test
-    void notRegistered(){
+    void notRegistered() throws DataAccessException {
         LoginResult actual = null;
         LoginRequest test = new LoginRequest("CosmoCougar", "GoCougars!");
         assertThrows(DataAccessException.class, () -> UserService.login(test));
@@ -96,7 +96,7 @@ class UserServiceTests {
     }
 
     @Test
-    void logoutSuccessful(){
+    void logoutSuccessful() throws DataAccessException {
         String authToken = null;
         RegisterResult register = null;
         try {
@@ -134,7 +134,7 @@ class UserServiceTests {
     }
 
     @Test
-    void notLoggedIn(){
+    void notLoggedIn() throws DataAccessException {
         String authToken = null;
         RegisterResult register = null;
         try {

@@ -4,6 +4,7 @@ import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
 import dataaccess.EmptyFieldException;
 import model.GameData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,8 +14,14 @@ import static chess.ChessGame.TeamColor.WHITE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameServiceTests {
+
+    @AfterEach
+    void clear() throws DataAccessException {
+        ClearService.clear();
+    }
+
     @Test
-    void createGameSuccess(){
+    void createGameSuccess() throws DataAccessException {
         try {
             UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
         }
@@ -39,7 +46,6 @@ class GameServiceTests {
             throw new RuntimeException(e);
         }
         assertEquals(expected, actual);
-        ClearService.clear();
     }
     @Test
     void invalidCreateAuthorization(){
@@ -59,7 +65,6 @@ class GameServiceTests {
         }
         CreateRequest test = new CreateRequest("1", "GG");
         assertThrows(DataAccessException.class, () -> GameService.createGame(test));
-        ClearService.clear();
     }
 
     @Test
@@ -97,7 +102,6 @@ class GameServiceTests {
         expectedList.add(new GameData(1, null, null, "GG", actual.games().getFirst().game()));
         GameListResult expected = new GameListResult(expectedList);
         assertEquals(expected, actual);
-        ClearService.clear();
     }
 
     @Test
@@ -134,8 +138,6 @@ class GameServiceTests {
             throw new RuntimeException(e);
         }
         assertEquals(expected, actual);
-        ClearService.clear();
-
     }
     @Test
     void colorAlreadyTaken(){
@@ -169,7 +171,6 @@ class GameServiceTests {
             throw new RuntimeException(e);
         }
         assertThrows(AlreadyTakenException.class, () -> GameService.joinGame(test));
-        ClearService.clear();
     }
     @Test
     void invalidGame(){
@@ -204,6 +205,5 @@ class GameServiceTests {
         }
         JoinRequest test = new JoinRequest(authToken, BLACK, 2);
         assertThrows(EmptyFieldException.class, () -> GameService.joinGame(test));
-        ClearService.clear();
     }
 }

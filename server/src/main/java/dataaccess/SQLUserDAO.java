@@ -8,10 +8,14 @@ public class SQLUserDAO implements UserDAO {
     }
 
     public UserData getUser(String username){
-
+        try {
+            return DatabaseManager.getUserData(username);
+        } catch (DataAccessException e){
+            return null;
+        }
     }
 
-    public void createUser(UserData userData{
+    public void createUser(UserData userData){
 
     }
 }

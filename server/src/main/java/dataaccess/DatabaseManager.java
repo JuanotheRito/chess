@@ -1,5 +1,7 @@
 package dataaccess;
 
+import model.UserData;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -35,6 +37,7 @@ public class DatabaseManager {
 
     public static void setupDatabase() throws DataAccessException {
         createDatabase();
+        initializeTables();
     }
 
     /**
@@ -48,6 +51,42 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+    static void newTable(String createTable) throws SQLException, DataAccessException {
+        try (var conn = getConnection()) {
+            try (var createTableStatement = conn.prepareStatement(createTable)) {
+                createTableStatement.executeUpdate();
+            }
+        }
+    }
+
+    static void initializeTables() throws DataAccessException {
+        try{
+            var createTable = """
+                    CREATE TABLE IF NOT EXISTS authData (
+                        authToken VARCHAR(255) NOT NULL,
+                        username VARCHAR(255) NOT NULL,
+                    )""";
+            newTable(createTable);
+            createTable = """
+                CREATE TABLE IF NOT EXISTS gameData (
+                    id INT NOT NULL AUTO_INCREMENT,
+                    whiteUsername VARCHAR(255),
+                    blackUsername VARCHAR(255),
+                    gameName VARCHAR(255) NOT NULL,
+                    game TEXT NOT NULL,
+                )""";
+            newTable(createTable);
+            createTable = """
+                CREATE TABLE IF NOT EXISTS userData (
+                    username VARCHAR(255) NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                )""";
+            newTable(createTable);
+        } catch (SQLException e){
             throw new DataAccessException(e.getMessage());
         }
     }
@@ -76,7 +115,7 @@ public class DatabaseManager {
 
     public static void clearAuthData() throws DataAccessException {
         try (var conn = getConnection()){
-            try(var preparedStatement = conn.prepareStatement("DROP TABLE authData;")){
+            try(var preparedStatement = conn.prepareStatement("TRUNCATE TABLE authData;")){
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -86,7 +125,7 @@ public class DatabaseManager {
 
     public static void clearGameData() throws DataAccessException {
         try (var conn = getConnection()){
-            try(var preparedStatement = conn.prepareStatement("DROP TABLE gameData;")){
+            try(var preparedStatement = conn.prepareStatement("TRUNCATE TABLE gameData;")){
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -96,11 +135,40 @@ public class DatabaseManager {
 
     public static void clearUserData() throws DataAccessException {
         try (var conn = getConnection()){
-            try(var preparedStatement = conn.prepareStatement("DROP TABLE userData;")){
+            try(var preparedStatement = conn.prepareStatement("TRUNCATE TABLE userData;")){
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static UserData getUserData(String findUser) throws DataAccessException {
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("SELECT username, password, email FROM userData WHERE username=?")) {
+                preparedStatement.setString(1, findUser);
+                try(var rs = preparedStatement.executeQuery()){
+                    while (rs.next()) {
+                        var username = rs.getString("username");
+                        var password = rs.getString("password");
+                        var email = rs.getString("email");
+
+                        return new UserData(username, password, email);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+
+        return null;
+    }
+
+    public static void addUser(UserData userData) throws DataAccessException {
+        try (var conn = getConnection()){
+            try (var preparedStatement = conn.prepareStatement(""))
+        } catch (SQLException e){
+            throw new DataAccessException((e.getMessage()));
         }
     }
 }

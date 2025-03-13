@@ -22,8 +22,8 @@ public class UserService {
         var password = registerRequest.password();
         var email = registerRequest.email();
 
-        UserDAO userDAO = new MemoryUserDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        UserDAO userDAO = new SQLUserDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
 
         if (isNull(username, password, email)) {
             throw new EmptyFieldException("Error: bad request");
