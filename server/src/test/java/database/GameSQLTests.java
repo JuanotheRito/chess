@@ -91,4 +91,22 @@ public class GameSQLTests {
         GameDAO gameDAO = new SQLGameDAO();
         assertThrows(DataAccessException.class, () -> gameDAO.joinGameAsColor(testGame, ChessGame.TeamColor.WHITE, "CosmoCougar"));
     }
+
+    @Test
+    void updateGameSuccessfully() throws DataAccessException{
+        GameDAO gameDAO = new SQLGameDAO();
+        gameDAO.createGame(testGame.gameName());
+        ChessGame chessGame = new ChessGame();
+        chessGame.setTeamTurn(ChessGame.TeamColor.BLACK);
+        gameDAO.updateGame(testGame, chessGame);
+        GameData expected = new GameData(testGame.gameID(), null, null, testGame.gameName(), chessGame);
+        GameData actual = gameDAO.getGame(testGame.gameID());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void updateNonexistentGame(){
+        GameDAO gameDAO = new SQLGameDAO();
+        assertThrows(DataAccessException.class, ()-> gameDAO.updateGame(testGame, new ChessGame()) );
+    }
 }

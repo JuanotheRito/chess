@@ -32,4 +32,11 @@ public class SQLGameDAO implements GameDAO{
         }
         DatabaseManager.setPlayer(game.gameID(), teamColor, username);
     }
+
+    public void updateGame(GameData game, ChessGame chessGame) throws DataAccessException {
+        if(getGame(game.gameID()) == null){
+            throw new DataAccessException("Game does not exist");
+        }
+        DatabaseManager.updateGame(game.gameID(), chessGame);
+    }
 }

@@ -32,4 +32,9 @@ public class MemoryGameDAO implements GameDAO {
     public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username){
         MemoryDatabase.setPlayer(game.gameID(), username, teamColor);
     }
+
+    @Override
+    public void updateGame(GameData game, ChessGame chessGame){
+
+    }
 }

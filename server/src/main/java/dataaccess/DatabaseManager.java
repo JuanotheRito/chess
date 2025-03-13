@@ -329,4 +329,19 @@ public class DatabaseManager {
             throw new DataAccessException(e.getMessage());
         }
     }
+
+    public static void updateGame(int id, ChessGame game) throws DataAccessException {
+        try (var conn = getConnection()) {
+            try(var preparedStatement = conn.prepareStatement("UPDATE gameData SET game = ? WHERE id = ?")){
+                Gson serializer = new Gson();
+                var json = serializer.toJson(game);
+                preparedStatement.setString(1, json);
+                preparedStatement.setInt(2, id);
+
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 }
