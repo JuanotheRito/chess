@@ -1,4 +1,4 @@
-package database;
+package custom;
 
 import chess.ChessGame;
 import dataaccess.DataAccessException;

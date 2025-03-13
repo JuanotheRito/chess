@@ -1,8 +1,9 @@
-package service;
+package custom;
 
 import dataaccess.*;
 import jdk.jshell.spi.ExecutionControl;
 import org.junit.jupiter.api.Test;
+import service.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 

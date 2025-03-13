@@ -1,4 +1,4 @@
-package service;
+package custom;
 
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;
@@ -6,6 +6,7 @@ import dataaccess.EmptyFieldException;
 import model.GameData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import service.*;
 
 import java.util.ArrayList;
 

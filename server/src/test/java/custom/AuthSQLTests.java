@@ -1,4 +1,4 @@
-package database;
+package custom;
 
 import dataaccess.*;
 import model.AuthData;

@@ -1,4 +1,4 @@
-package service;
+package custom;
 
 import chess.ChessGame;
 import dataaccess.DataAccessException;
@@ -7,6 +7,7 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Test;
+import service.ClearService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
