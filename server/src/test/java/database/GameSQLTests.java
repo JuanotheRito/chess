@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import service.ClearService;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,5 +70,25 @@ public class GameSQLTests {
     void gameDoesNotExist() throws DataAccessException{
         GameDAO gameDAO = new SQLGameDAO();
         assertNull(gameDAO.getGame(testGame.gameID()));
+    }
+
+    @Test
+    void joinGameSuccessfully() throws DataAccessException{
+        GameDAO gameDAO = new SQLGameDAO();
+        gameDAO.createGame(testGame.gameName());
+        gameDAO.joinGameAsColor(testGame, ChessGame.TeamColor.WHITE, "CosmoCougar");
+        var actual = gameDAO.getGame(testGame.gameID());
+        var expected = new GameData(1, "CosmoCougar", null, "gg", new ChessGame());
+        assertEquals(expected, actual);
+        gameDAO.joinGameAsColor(testGame, ChessGame.TeamColor.BLACK, "UtahUtes");
+        expected = new GameData(1, "CosmoCougar", "UtahUtes", "gg", new ChessGame());
+        actual = gameDAO.getGame(testGame.gameID());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void joinNonexistentGame(){
+        GameDAO gameDAO = new SQLGameDAO();
+        assertThrows(DataAccessException.class, () -> gameDAO.joinGameAsColor(testGame, ChessGame.TeamColor.WHITE, "CosmoCougar"));
     }
 }

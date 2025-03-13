@@ -17,8 +17,8 @@ public class GameService {
     public static GameListResult listGames(GameListRequest listRequest) throws DataAccessException {
         var authToken = listRequest.authToken();
 
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
+        GameDAO gameDAO = new SQLGameDAO();
 
         AuthData authData = authDAO.getAuth(authToken);
         if (authData == null){
@@ -31,8 +31,8 @@ public class GameService {
         var authToken = createRequest.authToken();
         String gameName = createRequest.gameName();
 
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
+        GameDAO gameDAO = new SQLGameDAO();
         if (isNull(authToken, gameName)){
             throw new EmptyFieldException("Error: bad request");
         }
@@ -47,9 +47,9 @@ public class GameService {
         var authToken = joinRequest.authToken();
         int gameID = joinRequest.gameID();
         ChessGame.TeamColor playerColor = joinRequest.playerColor();
-        JoinResult result = null;
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        JoinResult result;
+        AuthDAO authDAO = new SQLAuthDAO();
+        GameDAO gameDAO = new SQLGameDAO();
         var retrievedAuth = authDAO.getAuth(authToken);
         if (retrievedAuth == null){
             throw new DataAccessException ("Error: unauthorized");
@@ -74,8 +74,8 @@ public class GameService {
     }
 
     private static GameData getGameData(String authToken, int gameID, ChessGame.TeamColor playerColor) throws DataAccessException {
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
+        GameDAO gameDAO = new SQLGameDAO();
         if (isNull(authToken, gameID, playerColor)){
             throw new EmptyFieldException("Error: bad request");
         }

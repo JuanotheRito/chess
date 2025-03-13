@@ -26,7 +26,10 @@ public class SQLGameDAO implements GameDAO{
       }
     }
 
-    public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username){
+    public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username) throws DataAccessException {
+        if(getGame(game.gameID()) == null){
+            throw new DataAccessException("Game does not exist");
+        }
         DatabaseManager.setPlayer(game.gameID(), teamColor, username);
     }
 }

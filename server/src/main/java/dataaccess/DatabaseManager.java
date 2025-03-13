@@ -154,7 +154,7 @@ public class DatabaseManager {
             try(var preparedStatement = conn.prepareStatement("SELECT username, password, email FROM userData WHERE username=?")) {
                 preparedStatement.setString(1, findUser);
                 try(var rs = preparedStatement.executeQuery()){
-                    while (rs.next()) {
+                    if (rs.next()) {
                         var username = rs.getString("username");
                         var password = rs.getString("password");
                         var email = rs.getString("email");
@@ -206,7 +206,7 @@ public class DatabaseManager {
             try(var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM authData WHERE authToken=?;")) {
                 preparedStatement.setString(1, findAuth);
                 try(var rs = preparedStatement.executeQuery()){
-                    while (rs.next()) {
+                    if (rs.next()) {
                         var authToken = rs.getString("authToken");
                         var username = rs.getString("username");
 
@@ -287,7 +287,7 @@ public class DatabaseManager {
                 preparedStatement.setInt(1, gameId);
                 try(var rs = preparedStatement.executeQuery()){
                     Gson serializer = new Gson();
-                    while (rs.next()) {
+                    if (rs.next()) {
                         var id = rs.getInt("id");
                         var whiteUsername = rs.getString("whiteUsername");
                         var blackUsername = rs.getString("blackUsername");
@@ -306,8 +306,27 @@ public class DatabaseManager {
         return null;
     }
 
-    public static void setPlayer(int id, ChessGame.TeamColor teamColor, String username){
-        try (var conn = getConnection()){
-            if player
+    public static void setPlayer(int id, ChessGame.TeamColor teamColor, String username) throws DataAccessException {
+        try (var conn = getConnection()) {
+            if (teamColor == ChessGame.TeamColor.WHITE) {
+                try(var preparedStatement = conn.prepareStatement("UPDATE gameData SET whiteUsername = ? WHERE id = ?")){
+                    preparedStatement.setString(1, username);
+                    preparedStatement.setInt(2, id);
+
+                    preparedStatement.executeUpdate();
+                }
+            }
+            if (teamColor == ChessGame.TeamColor.BLACK) {
+                try(var preparedStatement = conn.prepareStatement("UPDATE gameData SET blackUsername = ? WHERE id = ?")){
+                    preparedStatement.setString(1, username);
+                    preparedStatement.setInt(2, id);
+
+                    preparedStatement.executeUpdate();
+                }
+            }
+
+        } catch (SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
     }
 }
