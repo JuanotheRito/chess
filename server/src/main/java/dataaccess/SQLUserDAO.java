@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class SQLUserDAO implements UserDAO {
     public void clear() throws DataAccessException {
@@ -15,7 +16,12 @@ public class SQLUserDAO implements UserDAO {
         }
     }
 
-    public void createUser(UserData userData){
-
+    public void createUser(UserData userData) throws DataAccessException {
+        String username = userData.username();
+        String password = userData.password();
+        String email = userData.email();
+        String hashedPw = BCrypt.hashpw(password, BCrypt.gensalt());
+        UserData encryptedUser = new UserData(username, hashedPw, email);
+        DatabaseManager.addUser(encryptedUser);
     }
 }

@@ -10,12 +10,12 @@ public class SQLAuthDAO implements AuthDAO{
         DatabaseManager.clearAuthData();
     }
 
-    public void createAuth(AuthData authData){
-
+    public void createAuth(AuthData authData) throws DataAccessException {
+        DatabaseManager.addAuthData(authData);
     }
 
-    public AuthData getAuth(String authToken) {
-
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        return DatabaseManager.getAuthData(authToken);
     }
     public void deleteAuth(AuthData authData){
 

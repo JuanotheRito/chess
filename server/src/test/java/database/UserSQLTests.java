@@ -7,10 +7,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import service.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserSQLTests {
     public static String username = "CosmoCougar";
@@ -36,11 +36,11 @@ public class UserSQLTests {
 
         RegisterResult result = UserService.register(testRegister);
         UserData actual = userDAO.getUser(username);
-        UserData testUser = new UserData(username, password, email);
-
-        AuthData testAuth = new AuthData(username, result.authToken());
+        UserData testUser = new UserData(username, actual.password(), email);
+        AuthData testAuth = new AuthData(result.authToken(), username);
         AuthData actualAuth = authDAO.getAuth(result.authToken());
 
+        assertTrue(BCrypt.checkpw(password, actual.password()));
         assertEquals(testUser, actual);
         assertEquals(testAuth, actualAuth);
     }

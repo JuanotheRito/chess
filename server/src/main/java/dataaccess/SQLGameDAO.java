@@ -11,15 +11,15 @@ public class SQLGameDAO implements GameDAO{
     }
 
     public GameData createGame(String gameName){
-
+        return null;
     }
 
     public ArrayList<GameData> getGames(){
-
+        return null;
     }
 
     public GameData getGame(int gameID){
-
+        return null;
     }
 
     public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username){

@@ -28,8 +28,10 @@ public class UserService {
         if (isNull(username, password, email)) {
             throw new EmptyFieldException("Error: bad request");
         }
+
         RegisterResult result = null;
         UserData user = userDAO.getUser(username);
+
         if (user == null) {
             user = new UserData(username, password, email);
             userDAO.createUser(user);

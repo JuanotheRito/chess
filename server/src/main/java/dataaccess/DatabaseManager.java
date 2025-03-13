@@ -1,5 +1,6 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 
 import java.sql.*;
@@ -67,7 +68,7 @@ public class DatabaseManager {
             var createTable = """
                     CREATE TABLE IF NOT EXISTS authData (
                         authToken VARCHAR(255) NOT NULL,
-                        username VARCHAR(255) NOT NULL,
+                        username VARCHAR(255) NOT NULL
                     )""";
             newTable(createTable);
             createTable = """
@@ -77,13 +78,14 @@ public class DatabaseManager {
                     blackUsername VARCHAR(255),
                     gameName VARCHAR(255) NOT NULL,
                     game TEXT NOT NULL,
+                    PRIMARY KEY (id)
                 )""";
             newTable(createTable);
             createTable = """
                 CREATE TABLE IF NOT EXISTS userData (
                     username VARCHAR(255) NOT NULL,
                     password VARCHAR(255) NOT NULL,
-                    email VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL
                 )""";
             newTable(createTable);
         } catch (SQLException e){
@@ -166,9 +168,52 @@ public class DatabaseManager {
 
     public static void addUser(UserData userData) throws DataAccessException {
         try (var conn = getConnection()){
-            try (var preparedStatement = conn.prepareStatement(""))
+            String username = userData.username();
+            String password = userData.password();
+            String email = userData.email();
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO userData (username, password, email) VALUES (?, ?, ?);")){
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+                preparedStatement.setString(3, email);
+                preparedStatement.executeUpdate();
+            }
         } catch (SQLException e){
             throw new DataAccessException((e.getMessage()));
         }
+    }
+
+    public static void addAuthData(AuthData authData) throws DataAccessException {
+        try (var conn = getConnection()){
+            String authToken = authData.authToken();
+            String username = authData.username();
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO authData (authToken, username) VALUES (?, ?);")){
+                preparedStatement.setString(1, authToken);
+                preparedStatement.setString(2, username);
+
+                preparedStatement.executeUpdate();
+            }
+        }catch (SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static AuthData getAuthData(String findAuth) throws DataAccessException {
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM authData WHERE authToken=?")) {
+                preparedStatement.setString(1, findAuth);
+                try(var rs = preparedStatement.executeQuery()){
+                    while (rs.next()) {
+                        var authToken = rs.getString("authToken");
+                        var username = rs.getString("username");
+
+                        return new AuthData(authToken, username);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+
+        return null;
     }
 }

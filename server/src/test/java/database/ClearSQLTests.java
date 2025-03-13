@@ -1,16 +1,13 @@
 package database;
 
-import dataaccess.DataAccessException;
-import dataaccess.DatabaseManager;
-import dataaccess.SQLUserDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.ClearService;
 import service.RegisterRequest;
 import service.UserService;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ClearSQLTests {
@@ -23,8 +20,14 @@ public class ClearSQLTests {
     @Test
     public void clearSuccess() throws DataAccessException{
         UserDAO userDAO = new SQLUserDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
+        GameDAO gameDAO = new SQLGameDAO();
+
         UserService.register(testRegister);
         ClearService.clear();
-        assertThrows(DataAccessException.class, () -> userDAO.getUser(testRegister.username()));
+
+        assertNull(userDAO.getUser(testRegister.username()));
+        assertNull(authDAO.getAuth("testtoken"));
+        assertTrue(gameDAO.getGames().isEmpty());
     }
 }
