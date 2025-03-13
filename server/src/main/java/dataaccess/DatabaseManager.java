@@ -1,6 +1,9 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 
 import java.sql.*;
@@ -225,6 +228,29 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static GameData createGame(String gameName) throws DataAccessException {
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("INSERT INTO gameData (whiteUsername, blackUsername, gameName, game) VALUES(null, null, ?, ?)", Statement.RETURN_GENERATED_KEYS)){
+                preparedStatement.setString(1, gameName);
+                Gson serializer = new Gson();
+                var json = serializer.toJson(new ChessGame());
+                preparedStatement.setString(2, json);
+
+                preparedStatement.executeUpdate();
+
+                var resultSet = preparedStatement.getGeneratedKeys();
+                var ID = 0;
+                if (resultSet.next()){
+                    ID = resultSet.getInt(1);
+                }
+
+                return new GameData(ID, null, null, gameName, serializer.fromJson(json, ChessGame.class));
+            }
+        } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
     }

@@ -10,8 +10,8 @@ public class SQLGameDAO implements GameDAO{
         DatabaseManager.clearGameData();
     }
 
-    public GameData createGame(String gameName){
-        return null;
+    public GameData createGame(String gameName) throws DataAccessException {
+        return DatabaseManager.createGame(gameName);
     }
 
     public ArrayList<GameData> getGames(){
@@ -19,7 +19,7 @@ public class SQLGameDAO implements GameDAO{
     }
 
     public GameData getGame(int gameID){
-        return null;
+       return null;
     }
 
     public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username){
