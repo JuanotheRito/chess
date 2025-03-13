@@ -8,7 +8,11 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
-
+        try {
+            DatabaseManager.setupDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         // Register your endpoints and handle exceptions here.
 
         Spark.post("/user", Handler::registerHandler);
