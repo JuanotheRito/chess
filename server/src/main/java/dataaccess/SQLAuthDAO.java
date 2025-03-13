@@ -2,8 +2,6 @@ package dataaccess;
 
 import model.AuthData;
 
-import java.sql.SQLException;
-
 public class SQLAuthDAO implements AuthDAO{
 
     public void clear() throws DataAccessException {
@@ -11,6 +9,9 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     public void createAuth(AuthData authData) throws DataAccessException {
+        if (!(getAuth(authData.authToken()) == null)){
+            throw new DataAccessException("Already exists");
+        }
         DatabaseManager.addAuthData(authData);
     }
 
@@ -18,6 +19,9 @@ public class SQLAuthDAO implements AuthDAO{
         return DatabaseManager.getAuthData(authToken);
     }
     public void deleteAuth(AuthData authData) throws DataAccessException {
+        if (((getAuth(authData.authToken())) == null)){
+            throw new DataAccessException("Does not exist");
+        }
         DatabaseManager.deleteAuthData(authData);
     }
 
