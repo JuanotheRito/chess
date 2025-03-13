@@ -3,6 +3,7 @@ package service;
 import dataaccess.*;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -48,21 +49,25 @@ public class UserService {
         var username = loginRequest.username();
         var password = loginRequest.password();
 
-        UserDAO userDAO = new MemoryUserDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        UserDAO userDAO = new SQLUserDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
 
         LoginResult result = null;
         UserData user = userDAO.getUser(username);
         if (user == null){
             throw new DataAccessException("Error: unauthorized");
         }
-        if (!Objects.equals(user.password(), password)){
+        if (!verifyUser(password, user.password())){
             throw new DataAccessException("Error: unauthorized");
         }
         AuthData authData = new AuthData(generateToken(), username);
         authDAO.createAuth(authData);
         result = new LoginResult(username, authData.authToken());
         return result;
+    }
+
+    static boolean verifyUser(String password, String hashedPw){
+        return BCrypt.checkpw(password, hashedPw);
     }
 
     public static LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException{

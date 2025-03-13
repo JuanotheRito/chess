@@ -61,4 +61,40 @@ public class UserSQLTests {
         assertThrows(EmptyFieldException.class, () -> UserService.register(test));
     }
 
+    @Test
+    void loginSuccessful() throws DataAccessException {
+        try {
+            UserService.register(testRegister);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginResult actual = null;
+        try {
+            actual = UserService.login(testLogin);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+
+        LoginResult expected = new LoginResult("CosmoCougar", actual.authToken());
+
+        assertEquals(expected, actual);
+    }
+    @Test
+    void incorrectPassword(){
+        try {
+            UserService.register(testRegister);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LoginRequest test = new LoginRequest("CosmoCougar", "GoCougas!");
+        assertThrows(DataAccessException.class, () -> UserService.login(test));
+    }
+    @Test
+    void notRegistered(){
+        assertThrows(DataAccessException.class, () -> UserService.login(testLogin));
+    }
+
 }
