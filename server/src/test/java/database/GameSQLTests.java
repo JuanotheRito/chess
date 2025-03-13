@@ -11,7 +11,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import service.ClearService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class GameSQLTests {
@@ -32,5 +35,41 @@ public class GameSQLTests {
         GameDAO gameDAO = new SQLGameDAO();
         var actual = gameDAO.createGame(testGame.gameName());
         assertEquals(testGame, actual);
+    }
+
+    @Test
+    void nullNameCreateFail(){
+        GameDAO gameDAO = new SQLGameDAO();
+        assertThrows(DataAccessException.class, ()->gameDAO.createGame(null));
+    }
+
+    @Test
+    void retriveListSuccess() throws DataAccessException {
+        GameDAO gameDAO = new SQLGameDAO();
+        var newGame = gameDAO.createGame(testGame.gameName());
+        ArrayList<GameData> expected = new ArrayList<>();
+        expected.add(newGame);
+        assertEquals(expected, gameDAO.getGames());
+    }
+
+    @Test
+    void retrieveEmptyListSuccess() throws DataAccessException{
+        GameDAO gameDAO = new SQLGameDAO();
+        ArrayList<GameData> expected = new ArrayList<>();
+        assertEquals(expected, gameDAO.getGames());
+    }
+
+    @Test
+    void retrieveGameViaIDSuccess() throws DataAccessException{
+        GameDAO gameDAO = new SQLGameDAO();
+        var newGame = gameDAO.createGame(testGame.gameName());
+        newGame = gameDAO.getGame(testGame.gameID());
+        assertEquals(testGame, newGame);
+    }
+
+    @Test
+    void gameDoesNotExist() throws DataAccessException{
+        GameDAO gameDAO = new SQLGameDAO();
+        assertNull(gameDAO.getGame(testGame.gameID()));
     }
 }

@@ -10,9 +10,9 @@ public interface GameDAO {
 
     public GameData createGame(String gameName) throws DataAccessException;
 
-    public ArrayList<GameData> getGames();
+    public ArrayList<GameData> getGames() throws DataAccessException;
 
-    public GameData getGame(int gameID);
+    public GameData getGame(int gameID) throws DataAccessException;
 
     public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username);
 }

@@ -7,6 +7,7 @@ import model.GameData;
 import model.UserData;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Properties;
 
 public class DatabaseManager {
@@ -253,5 +254,60 @@ public class DatabaseManager {
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
+    }
+
+    public static ArrayList<GameData> getGameList() throws DataAccessException{
+        try (var conn = getConnection()){
+            ArrayList<GameData> gameList = new ArrayList<>();
+            try(var preparedStatement = conn.prepareStatement("SELECT id, whiteUsername, blackUsername, gameName, game FROM gameData;")){
+                try (var rs = preparedStatement.executeQuery()) {
+                    Gson serializer = new Gson();
+                    while (rs.next()) {
+                        var id = rs.getInt("id");
+                        var whiteUsername = rs.getString("whiteUsername");
+                        var blackUsername = rs.getString("blackUsername");
+                        var gameName = rs.getString("gameName");
+                        var json = rs.getString("game");
+                        var game = serializer.fromJson(json, ChessGame.class);
+
+                        GameData readGame = new GameData(id, whiteUsername, blackUsername, gameName, game);
+                        gameList.add(readGame);
+                    }
+                }
+            }
+            return gameList;
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public static GameData getGameData(int gameId) throws DataAccessException{
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("SELECT id, whiteUsername, blackUsername, gameName, game FROM gameData WHERE id=?")) {
+                preparedStatement.setInt(1, gameId);
+                try(var rs = preparedStatement.executeQuery()){
+                    Gson serializer = new Gson();
+                    while (rs.next()) {
+                        var id = rs.getInt("id");
+                        var whiteUsername = rs.getString("whiteUsername");
+                        var blackUsername = rs.getString("blackUsername");
+                        var gameName = rs.getString("gameName");
+                        var json = rs.getString("game");
+                        var game = serializer.fromJson(json, ChessGame.class);
+
+                        return new GameData(id, whiteUsername, blackUsername, gameName, game);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+
+        return null;
+    }
+
+    public static void setPlayer(int id, ChessGame.TeamColor teamColor, String username){
+        try (var conn = getConnection()){
+            if player
     }
 }

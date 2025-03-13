@@ -14,15 +14,19 @@ public class SQLGameDAO implements GameDAO{
         return DatabaseManager.createGame(gameName);
     }
 
-    public ArrayList<GameData> getGames(){
-        return null;
+    public ArrayList<GameData> getGames() throws DataAccessException {
+        return DatabaseManager.getGameList();
     }
 
     public GameData getGame(int gameID){
-       return null;
+      try {
+          return DatabaseManager.getGameData(gameID);
+      } catch (DataAccessException e) {
+          return null;
+      }
     }
 
     public void joinGameAsColor(GameData game, ChessGame.TeamColor teamColor, String username){
-
+        DatabaseManager.setPlayer(game.gameID(), teamColor, username);
     }
 }
