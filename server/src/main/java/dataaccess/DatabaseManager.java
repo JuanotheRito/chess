@@ -199,7 +199,7 @@ public class DatabaseManager {
 
     public static AuthData getAuthData(String findAuth) throws DataAccessException {
         try (var conn = getConnection()){
-            try(var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM authData WHERE authToken=?")) {
+            try(var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM authData WHERE authToken=?;")) {
                 preparedStatement.setString(1, findAuth);
                 try(var rs = preparedStatement.executeQuery()){
                     while (rs.next()) {
@@ -215,5 +215,17 @@ public class DatabaseManager {
         }
 
         return null;
+    }
+
+    public static void deleteAuthData(AuthData authData) throws DataAccessException{
+        try (var conn = getConnection()){
+            try(var preparedStatement = conn.prepareStatement("DELETE FROM authData WHERE authToken=?;")){
+                preparedStatement.setString(1, authData.authToken());
+
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e){
+            throw new DataAccessException(e.getMessage());
+        }
     }
 }

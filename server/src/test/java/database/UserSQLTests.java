@@ -97,4 +97,61 @@ public class UserSQLTests {
         assertThrows(DataAccessException.class, () -> UserService.login(testLogin));
     }
 
+    @Test
+    void logoutSuccessful() throws DataAccessException {
+        AuthDAO authDAO = new SQLAuthDAO();
+        String authToken = null;
+        RegisterResult register = null;
+        try {
+            register = UserService.register(testRegister);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        authToken = register.authToken();
+        try {
+            UserService.logout(new LogoutRequest(authToken));
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        try {
+            authToken = UserService.login(testLogin).authToken();
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        LogoutRequest test = new LogoutRequest(authToken);
+        LogoutResult expected = new LogoutResult(true);
+        LogoutResult actual = null;
+        try{
+            actual = UserService.logout(test);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        assertEquals(actual, expected);
+        assertNull(authDAO.getAuth(authToken));
+    }
+
+    @Test
+    void notLoggedIn() throws DataAccessException {
+        String authToken = null;
+        RegisterResult register = null;
+        try {
+            register = UserService.register(testRegister);
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        authToken = register.authToken();
+        try{
+            UserService.logout(new LogoutRequest(authToken));
+        }
+        catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        LogoutRequest test = new LogoutRequest(authToken);
+        assertThrows(DataAccessException.class, () -> UserService.logout(test));
+    }
 }

@@ -73,7 +73,7 @@ public class UserService {
     public static LogoutResult logout(LogoutRequest logoutRequest) throws DataAccessException{
         var authToken = logoutRequest.authToken();
 
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
 
         LogoutResult result = new LogoutResult(false);
         AuthData authData = authDAO.getAuth(authToken);

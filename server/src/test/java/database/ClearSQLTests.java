@@ -23,11 +23,11 @@ public class ClearSQLTests {
         AuthDAO authDAO = new SQLAuthDAO();
         GameDAO gameDAO = new SQLGameDAO();
 
-        UserService.register(testRegister);
+        String testToken = UserService.register(testRegister).authToken();
         ClearService.clear();
 
         assertNull(userDAO.getUser(testRegister.username()));
-        assertNull(authDAO.getAuth("testtoken"));
+        assertNull(authDAO.getAuth(testToken));
         assertTrue(gameDAO.getGames().isEmpty());
     }
 }
