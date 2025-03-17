@@ -1,5 +1,8 @@
 package chess;
 
+import chess.movecalc.EnPassantCalculator;
+import chess.movecalc.MoveCalculator;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -141,132 +144,14 @@ public class ChessGame {
         }
 
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN){
-            if (piece.getTeamColor() == TeamColor.WHITE && startPosition.getRow() == 5) {
-                //Left En Passant
-                ChessMove passant = new ChessMove(startPosition,
-                        new ChessPosition((startPosition.getRow()) + 1,
-                                (startPosition.getColumn() - 1)), null);
-                ChessMove previousCheck = new ChessMove (
-                        new ChessPosition(startPosition.getRow()+2, startPosition.getColumn()-1),
-                        new ChessPosition(startPosition.getRow(), startPosition.getColumn()-1),
-                        null
-                );
-
-                if (startPosition.getColumn() != 1) {
-                    if (board.getPiece(passant.getEndPosition()) == null) {
-                        ChessPiece enemyPawn = board.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() - 1));
-                        if (enemyPawn != null) {
-                            if (
-                                    enemyPawn.getTeamColor() != TeamColor.WHITE &&
-                                    this.previous.equals(previousCheck) &&
-                                    enemyPawn.getPieceType() == ChessPiece.PieceType.PAWN
-                            )
-                            {
-                                isValidMove = testMove(passant);
-                                if (isValidMove){
-                                    passant.setEnPassant();
-                                    valid.add(passant);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                passant = new ChessMove(startPosition, new ChessPosition((startPosition.getRow()) + 1, (startPosition.getColumn() + 1)), null);
-                previousCheck = new ChessMove (
-                        new ChessPosition(startPosition.getRow()+2, startPosition.getColumn()+1),
-                        new ChessPosition(startPosition.getRow(), startPosition.getColumn()+1),
-                        null
-                );
-                // Right En Passant
-                if (startPosition.getColumn() != 8) {
-                    if (board.getPiece(passant.getEndPosition()) == null) {
-                        ChessPiece enemyPawn = board.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() + 1));
-                        if (enemyPawn != null) {
-                            if (
-                                    enemyPawn.getTeamColor() != TeamColor.WHITE &&
-                                            this.previous.equals(previousCheck) &&
-                                            enemyPawn.getPieceType() == ChessPiece.PieceType.PAWN
-                            )
-                            {
-                                isValidMove = testMove(passant);
-                                if (isValidMove){
-                                    passant.setEnPassant();
-                                    valid.add(passant);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (piece.getTeamColor() == TeamColor.BLACK && startPosition.getRow() == 4) {
-                //Left En Passant
-                ChessMove passant = new ChessMove(startPosition, new ChessPosition((startPosition.getRow()) - 1,
-                        (startPosition.getColumn() - 1)), null);
-                ChessMove previousCheck = new ChessMove (
-                        new ChessPosition(startPosition.getRow()-2, startPosition.getColumn()-1),
-                        new ChessPosition(startPosition.getRow(), startPosition.getColumn()-1),
-                        null
-                );
-
-                if (startPosition.getColumn() != 1) {
-                    if (board.getPiece(passant.getEndPosition()) == null) {
-                        ChessPiece enemyPawn = board.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() - 1));
-                        if (enemyPawn != null) {
-                            if (
-                                    enemyPawn.getTeamColor() != TeamColor.BLACK &&
-                                            this.previous.equals(previousCheck) &&
-                                            enemyPawn.getPieceType() == ChessPiece.PieceType.PAWN
-                            )
-                            {
-                                isValidMove = testMove(passant);
-                                if (isValidMove){
-                                    passant.setEnPassant();
-                                    valid.add(passant);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                passant = new ChessMove(startPosition, new ChessPosition((startPosition.getRow()) - 1, (startPosition.getColumn() + 1)), null);
-                previousCheck = new ChessMove (
-                        new ChessPosition(startPosition.getRow()-2, startPosition.getColumn()+1),
-                        new ChessPosition(startPosition.getRow(), startPosition.getColumn()+1),
-                        null
-                );
-                // Right En Passant
-                if (startPosition.getColumn() != 8) {
-                    if (board.getPiece(passant.getEndPosition()) == null) {
-                        ChessPiece enemyPawn = board.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() + 1));
-                        if (enemyPawn != null) {
-                            if (
-                                    enemyPawn.getTeamColor() != TeamColor.BLACK &&
-                                            this.previous.equals(previousCheck) &&
-                                            enemyPawn.getPieceType() == ChessPiece.PieceType.PAWN
-                            )
-                            {
-                                isValidMove = testMove(passant);
-                                if (isValidMove){
-                                    passant.setEnPassant();
-                                    valid.add(passant);
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
+            EnPassantCalculator calc = new EnPassantCalculator();
+            ArrayList<ChessMove> enPassant = calc.enPassant(piece, startPosition, this.board, this);
+            valid.addAll(enPassant);
         }
         return valid;
     }
 
-    /**
-     * Tests to see if a move is valid or not without changing the state of the actual board
-     *
-     * @param move Move to be tested
-     * @return True if the move is valid, false if it is invalid
-     */
+
     public boolean testMove(ChessMove move) {
         boolean validMove = true;
         ChessPiece enemyPiece = board.getPiece(move.getEndPosition());
@@ -285,12 +170,6 @@ public class ChessGame {
         return validMove;
     }
 
-    /**
-     * Makes a move in a chess game
-     *
-     * @param move chess move to preform
-     * @throws InvalidMoveException if move is invalid
-     */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessMove targetMove = null;
         ChessPiece piece = board.getPiece(move.getStartPosition());
