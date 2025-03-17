@@ -1,107 +1,108 @@
-package custom;
+package service;
 
 import dataaccess.*;
-import jdk.jshell.spi.ExecutionControl;
+import model.AuthData;
+import model.UserData;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import service.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceTests {
+public class UserSQLTests {
+    public static String username = "CosmoCougar";
+    public static String password = "GoCougs!";
+    public static String email = "cosmocougar@byu.edu";
+    public static RegisterRequest testRegister = new RegisterRequest(username, password, email);
+    public static LoginRequest testLogin = new LoginRequest(username, password);
 
-    @Test
-    void registerSuccess() throws DataAccessException {
-        AuthDAO authDAO = new MemoryAuthDAO();
-        UserDAO userDAO = new MemoryUserDAO();
+    @BeforeAll
+    public static void setupDatabase() throws DataAccessException {
+        DatabaseManager.setupDatabase();
+    }
 
-        RegisterRequest test = new RegisterRequest("CosmoCougar", "GoCougs", "cosmocougar@byu.edu");
-        RegisterResult result = null;
-        try {
-            result = UserService.register(test);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-        RegisterResult expected = new RegisterResult("CosmoCougar", result.authToken());
-
-        assertEquals(expected, result);
+    @AfterEach
+    public void reset() throws DataAccessException {
         ClearService.clear();
     }
 
     @Test
-    void registerDuplicate() throws AlreadyTakenException, DataAccessException {
-        AuthDAO authDAO = new MemoryAuthDAO();
-        UserDAO userDAO = new MemoryUserDAO();
+    public void registerSuccess() throws DataAccessException{
+        UserDAO userDAO = new SQLUserDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
 
-        RegisterRequest test = new RegisterRequest("CosmoCougar", "GoCougs", "cosmocougar@byu.edu");
-        RegisterResult result = null;
+        RegisterResult result = UserService.register(testRegister);
+        UserData actual = userDAO.getUser(username);
+        UserData testUser = new UserData(username, actual.password(), email);
+        AuthData testAuth = new AuthData(result.authToken(), username);
+        AuthData actualAuth = authDAO.getAuth(result.authToken());
+
+        assertTrue(BCrypt.checkpw(password, actual.password()));
+        assertEquals(testUser, actual);
+        assertEquals(testAuth, actualAuth);
+    }
+
+    @Test
+    public void duplicateRegister() {
         try {
-            result = UserService.register(test);
+            UserService.register(testRegister);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        assertThrows(AlreadyTakenException.class, () -> UserService.register(test));
-        ClearService.clear();
+        assertThrows(AlreadyTakenException.class, () -> UserService.register(testRegister));
     }
 
     @Test
     void badRegisterRequest() throws DataAccessException {
-        AuthDAO authDAO = new MemoryAuthDAO();
-        UserDAO userDAO = new MemoryUserDAO();
         RegisterRequest test = new RegisterRequest("CosmoCougar", null, "cosmocougar@byu.edu");
-        RegisterResult result = null;
         assertThrows(EmptyFieldException.class, () -> UserService.register(test));
-        ClearService.clear();
     }
 
     @Test
     void loginSuccessful() throws DataAccessException {
         try {
-            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+            UserService.register(testRegister);
         }
         catch(Exception e){
             throw new RuntimeException(e);
         }
         LoginResult actual = null;
-        LoginRequest test = new LoginRequest("CosmoCougar", "GoCougars!");
         try {
-            actual = UserService.login(test);
+            actual = UserService.login(testLogin);
         }
         catch (Exception e){
             throw new RuntimeException(e);
         }
+
         LoginResult expected = new LoginResult("CosmoCougar", actual.authToken());
 
         assertEquals(expected, actual);
-        ClearService.clear();
     }
     @Test
-    void incorrectPassword() throws DataAccessException {
+    void incorrectPassword(){
         try {
-            UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+            UserService.register(testRegister);
         }
         catch(Exception e){
             throw new RuntimeException(e);
         }
-        LoginResult actual = null;
         LoginRequest test = new LoginRequest("CosmoCougar", "GoCougas!");
         assertThrows(DataAccessException.class, () -> UserService.login(test));
-        ClearService.clear();
     }
     @Test
-    void notRegistered() throws DataAccessException {
-        LoginResult actual = null;
-        LoginRequest test = new LoginRequest("CosmoCougar", "GoCougars!");
-        assertThrows(DataAccessException.class, () -> UserService.login(test));
-        ClearService.clear();
+    void notRegistered(){
+        assertThrows(DataAccessException.class, () -> UserService.login(testLogin));
     }
 
     @Test
     void logoutSuccessful() throws DataAccessException {
+        AuthDAO authDAO = new SQLAuthDAO();
         String authToken = null;
         RegisterResult register = null;
         try {
-             register = UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+            register = UserService.register(testRegister);
         }
         catch(Exception e){
             throw new RuntimeException(e);
@@ -113,9 +114,8 @@ class UserServiceTests {
         catch (Exception e){
             throw new RuntimeException(e);
         }
-        LoginRequest login = new LoginRequest("CosmoCougar", "GoCougars!");
         try {
-            authToken = UserService.login(login).authToken();
+            authToken = UserService.login(testLogin).authToken();
         }
         catch (Exception e){
             throw new RuntimeException(e);
@@ -130,8 +130,7 @@ class UserServiceTests {
             throw new RuntimeException(e);
         }
         assertEquals(actual, expected);
-        assertEquals(0, MemoryDatabase.getAuthData().size());
-        ClearService.clear();
+        assertNull(authDAO.getAuth(authToken));
     }
 
     @Test
@@ -139,7 +138,7 @@ class UserServiceTests {
         String authToken = null;
         RegisterResult register = null;
         try {
-            register = UserService.register(new RegisterRequest("CosmoCougar", "GoCougars!", "cosmo@byu.edu"));
+            register = UserService.register(testRegister);
         }
         catch(Exception e){
             throw new RuntimeException(e);
@@ -153,6 +152,5 @@ class UserServiceTests {
         }
         LogoutRequest test = new LogoutRequest(authToken);
         assertThrows(DataAccessException.class, () -> UserService.logout(test));
-        ClearService.clear();
     }
 }

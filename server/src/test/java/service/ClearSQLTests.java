@@ -1,4 +1,4 @@
-package custom;
+package service;
 
 import dataaccess.*;
 import org.junit.jupiter.api.AfterEach;
@@ -32,7 +32,7 @@ public class ClearSQLTests {
     }
 
     @Test
-    public void clearUserSuccess() throws DataAccessException{
+    public void clearUserSuccess() throws DataAccessException {
         UserDAO userDAO = new SQLUserDAO();
         userDAO.clear();
         assertNull(userDAO.getUser(testRegister.username()));

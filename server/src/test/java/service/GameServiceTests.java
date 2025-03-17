@@ -1,4 +1,4 @@
-package custom;
+package service;
 
 import dataaccess.AlreadyTakenException;
 import dataaccess.DataAccessException;

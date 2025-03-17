@@ -1,4 +1,4 @@
-package custom;
+package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccessException;

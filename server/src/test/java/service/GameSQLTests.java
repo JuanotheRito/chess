@@ -1,4 +1,4 @@
-package custom;
+package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccessException;
@@ -25,7 +25,7 @@ public class GameSQLTests {
     }
 
     @AfterEach
-    void clear() throws DataAccessException{
+    void clear() throws DataAccessException {
         ClearService.clear();
     }
 
