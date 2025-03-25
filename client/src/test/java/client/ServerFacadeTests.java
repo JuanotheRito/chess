@@ -18,6 +18,10 @@ public class ServerFacadeTests {
     private static Server server;
     private static UserData testUser = new UserData("CosmoCougar", "GoCougs!", "cosmo@byu.edu");
     private static ServerFacade testServer;
+    static String username = testUser.username();
+    static String password = testUser.password();
+    static String email = testUser.email();
+
     @BeforeAll
     public static void init() {
         server = new Server();
@@ -32,16 +36,18 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-    public static void registerSetup() {
-
+    public static void registerSetup(){
+        try {
+            testServer.register(username, password, email);
+            testServer.logout();
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
     @Test
     public void registerSuccess() {
-        String username = testUser.username();
-        String password = testUser.password();
-        String email = testUser.email();
         AuthData result;
         try {
              result = testServer.register(username, password, email);
@@ -56,10 +62,6 @@ public class ServerFacadeTests {
 
     @Test
     public void badRegisterCommand(){
-        String username = testUser.username();
-        String password = testUser.password();
-        String email = testUser.email();
-
         try {
             testServer.register(username, password, email);
         } catch (Exception e){
@@ -67,6 +69,27 @@ public class ServerFacadeTests {
         }
 
         assertThrows(ResponseException.class, () -> testServer.register(username, password, email));
+    }
+
+    @Test
+    public void loginSuccess(){
+        registerSetup();
+        AuthData result;
+        try {
+            result = testServer.login(username, password);
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        AuthData expected = new AuthData(result.authToken(), username);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void wrongPassword(){
+        registerSetup();
+
+        assertThrows(ResponseException.class, () -> testServer.login(username, "GGGGG"));
     }
 
 }
