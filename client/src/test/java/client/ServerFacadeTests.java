@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServerFacadeTests {
 
     private static Server server;
-    private static UserData testUser = new UserData("CosmoCougar", "GoCougs!", "cosmo@byu.edu");
+    private final static UserData testUser = new UserData("CosmoCougar", "GoCougs!", "cosmo@byu.edu");
     private static ServerFacade testServer;
     static String username = testUser.username();
     static String password = testUser.password();
@@ -39,8 +39,7 @@ public class ServerFacadeTests {
 
     public static void registerSetup(){
         try {
-            String authToken = testServer.register(username, password, email).authToken();
-            testServer.logout(authToken);
+            testServer.logout();
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
@@ -107,7 +106,7 @@ public class ServerFacadeTests {
         String authToken = loginSetup().authToken();
         AuthDAO authDAO = new SQLAuthDAO();
         try {
-            testServer.logout(authToken);
+            testServer.logout();
             assertNull(authDAO.getAuth(authToken));
         } catch (Exception ex){
             throw new RuntimeException(ex);
@@ -117,8 +116,12 @@ public class ServerFacadeTests {
     @Test
     public void alreadyLoggedOut(){
         String authToken = loginSetup().authToken();
-        testServer.logout(authToken);
-        assertThrows(ResponseException.class, () -> testServer.logout(authToken));
+        try{
+            testServer.logout();
+        } catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+        assertThrows(ResponseException.class, () -> testServer.logout());
     }
 
 }

@@ -11,10 +11,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Map;
 
 public class ServerFacade {
 
     private final String serverUrl;
+    private String authToken;
 
     public ServerFacade(String url){
         serverUrl = url;
@@ -23,38 +25,34 @@ public class ServerFacade {
     public AuthData register(String username, String password, String email) throws ResponseException{
         var path = "/user";
         UserData userData = new UserData(username, password, email);
-        return this.makeRequest("POST", path, userData, AuthData.class);
+        AuthData authData = this.makeRequest("POST", path, userData, AuthData.class, false);
+        authToken = authData.authToken();
+        return authData;
     }
 
-    //public AuthData login(String username, String password) throws ResponseException{
-
-    //}
-
-    public void logout(String authToken) throws ResponseException{
+    public AuthData login(String username, String password) throws ResponseException{
         var path = "/session";
-        var method = "DELETE";
-        try{
-            URL url = (new URI(serverUrl + path)).toURL();
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);
-            http.setDoOutput(true);
-
-            http.addRequestProperty("authorization", authToken);
-            http.connect();
-            throwIfNotSuccessful(http);
-        } catch (ResponseException ex){
-            throw ex;
-        } catch (Exception ex){
-            throw new ResponseException(500, ex.getMessage());
-        }
+        Map<String, String> loginData = Map.of("username", username, "password", password);
+        AuthData authData = this.makeRequest("POST", path, loginData, AuthData.class, false);
+        authToken = authData.authToken();
+        return authData;
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+    public void logout() throws ResponseException{
+        var path = "/session";
+        this.makeRequest("DELETE", path, null, null, true);
+    }
+
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, boolean needsAuth) throws ResponseException {
         try{
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
+
+            if (needsAuth){
+                http.addRequestProperty("authorization", authToken);
+            }
 
             writeBody(request, http);
             http.connect();
