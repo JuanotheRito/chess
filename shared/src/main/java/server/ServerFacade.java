@@ -26,19 +26,26 @@ public class ServerFacade {
         return this.makeRequest("POST", path, userData, AuthData.class);
     }
 
-    public AuthData login(String username, String password) throws ResponseException{
+    //public AuthData login(String username, String password) throws ResponseException{
 
-    }
+    //}
 
-    public void logout(String authToken){
+    public void logout(String authToken) throws ResponseException{
         var path = "/session";
-        var mehtod = "DELETE";
+        var method = "DELETE";
         try{
             URL url = (new URI(serverUrl + path)).toURL();
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod(method);
+            http.setDoOutput(true);
+
+            http.addRequestProperty("authorization", authToken);
+            http.connect();
+            throwIfNotSuccessful(http);
         } catch (ResponseException ex){
             throw ex;
         } catch (Exception ex){
-            throw new ResponseException()
+            throw new ResponseException(500, ex.getMessage());
         }
     }
 

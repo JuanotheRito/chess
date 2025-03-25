@@ -106,8 +106,8 @@ public class ServerFacadeTests {
     public void logoutSuccess(){
         String authToken = loginSetup().authToken();
         AuthDAO authDAO = new SQLAuthDAO();
-        testServer.logout(authToken);
         try {
+            testServer.logout(authToken);
             assertNull(authDAO.getAuth(authToken));
         } catch (Exception ex){
             throw new RuntimeException(ex);
