@@ -1,6 +1,8 @@
 package client;
 
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.SQLAuthDAO;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.*;
@@ -9,8 +11,7 @@ import server.Server;
 import server.ServerFacade;
 import service.ClearService;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ServerFacadeTests {
@@ -38,9 +39,18 @@ public class ServerFacadeTests {
 
     public static void registerSetup(){
         try {
-            testServer.register(username, password, email);
-            testServer.logout();
+            String authToken = testServer.register(username, password, email).authToken();
+            testServer.logout(authToken);
         } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static AuthData loginSetup(){
+        registerSetup();
+        try {
+            return testServer.login(username, password);
+        } catch (ResponseException e){
             throw new RuntimeException(e);
         }
     }
@@ -90,6 +100,25 @@ public class ServerFacadeTests {
         registerSetup();
 
         assertThrows(ResponseException.class, () -> testServer.login(username, "GGGGG"));
+    }
+
+    @Test
+    public void logoutSuccess(){
+        String authToken = loginSetup().authToken();
+        AuthDAO authDAO = new SQLAuthDAO();
+        testServer.logout(authToken);
+        try {
+            assertNull(authDAO.getAuth(authToken));
+        } catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Test
+    public void alreadyLoggedOut(){
+        String authToken = loginSetup().authToken();
+        testServer.logout(authToken);
+        assertThrows(ResponseException.class, () -> testServer.logout(authToken));
     }
 
 }

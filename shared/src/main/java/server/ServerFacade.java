@@ -30,6 +30,18 @@ public class ServerFacade {
 
     }
 
+    public void logout(String authToken){
+        var path = "/session";
+        var mehtod = "DELETE";
+        try{
+            URL url = (new URI(serverUrl + path)).toURL();
+        } catch (ResponseException ex){
+            throw ex;
+        } catch (Exception ex){
+            throw new ResponseException()
+        }
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try{
             URL url = (new URI(serverUrl + path)).toURL();
