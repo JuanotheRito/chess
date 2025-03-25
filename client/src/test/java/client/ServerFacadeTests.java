@@ -4,8 +4,11 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.SQLAuthDAO;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import server.ResponseException;
 import server.Server;
 import server.ServerFacade;
@@ -16,12 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
+    private static final Logger log = LoggerFactory.getLogger(ServerFacadeTests.class);
     private static Server server;
     private final static UserData testUser = new UserData("CosmoCougar", "GoCougs!", "cosmo@byu.edu");
     private static ServerFacade testServer;
     static String username = testUser.username();
     static String password = testUser.password();
     static String email = testUser.email();
+    private final static String gameName = "gg";
 
     @BeforeAll
     public static void init() {
@@ -39,6 +44,7 @@ public class ServerFacadeTests {
 
     public static void registerSetup(){
         try {
+            testServer.register(username, password, email);
             testServer.logout();
         } catch (ResponseException e) {
             throw new RuntimeException(e);
@@ -115,13 +121,32 @@ public class ServerFacadeTests {
 
     @Test
     public void alreadyLoggedOut(){
-        String authToken = loginSetup().authToken();
         try{
             testServer.logout();
         } catch (Exception ex){
             throw new RuntimeException(ex);
         }
         assertThrows(ResponseException.class, () -> testServer.logout());
+    }
+
+    @Test
+    public void createSuccess(){
+        loginSetup();
+        GameData actual;
+        try{
+            actual = testServer.create(gameName);
+        } catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+        GameData expected = new GameData(actual.gameID(), null, null, "gg", actual.game());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void nullNameCreateFail(){
+        loginSetup();
+
+        assertThrows(ResponseException.class, () -> testServer.create(null));
     }
 
 }

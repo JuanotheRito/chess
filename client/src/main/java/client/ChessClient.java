@@ -10,7 +10,6 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
-    private String authToken;
 
     public ChessClient (String serverUrl, Repl repl){
         server = new ServerFacade(serverUrl);
@@ -26,7 +25,7 @@ public class ChessClient {
                 case "login" -> login(params);
                 //case "quit" -> quit();
                 case "register" -> register(params);
-                //case "logout" -> logout();
+                case "logout" -> logout();
                 //case "create" -> create(params);
                 //case "list" -> list();
                 //case "join" -> join(params);
@@ -41,7 +40,7 @@ public class ChessClient {
             var username = params[0];
             var password = params[1];
             var email = params[2];
-            authToken = server.register(username, password, email).authToken();
+            server.register(username, password, email);
             state = State.SIGNEDIN;
             return ("Welcome " + username + "! Type \"help\" to get a list of commands.");
         }
@@ -54,13 +53,22 @@ public class ChessClient {
                 var username = params[0];
                 var password = params[1];
 
-                authToken = server.login(username, password).authToken();
+                server.login(username, password);
                 state = State.SIGNEDIN;
                 return ("Welcome " + username + "! Type \"help\" to get a list of commands.");
             }
             throw new ResponseException(400, "Expected: <USERNAME> <PASSWORD>");
         }
         throw new ResponseException(400, "Already signed in");
+    }
+
+    public String logout() throws ResponseException{
+        if (state == State.SIGNEDIN){
+            server.logout();
+            state = State.SIGNEDOUT;
+            return ("You have successfully signed out. So long!");
+        }
+        throw new ResponseException(400, "Already signed out");
     }
 
     public String help(){
