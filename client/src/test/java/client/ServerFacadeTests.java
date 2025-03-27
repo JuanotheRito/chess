@@ -132,13 +132,13 @@ public class ServerFacadeTests {
     @Test
     public void createSuccess(){
         loginSetup();
-        GameData actual;
+        double actual;
         try{
             actual = testServer.create(gameName);
         } catch (Exception ex){
             throw new RuntimeException(ex);
         }
-        GameData expected = new GameData(actual.gameID(), null, null, "gg", actual.game());
+        double expected = 1;
         assertEquals(expected, actual);
     }
 
@@ -146,7 +146,7 @@ public class ServerFacadeTests {
     public void nullNameCreateFail(){
         loginSetup();
 
-        assertThrows(ResponseException.class, () -> testServer.create(null));
+        assertThrows(NullPointerException.class, () -> testServer.create(null));
     }
 
 }

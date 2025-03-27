@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 
 import java.io.InputStream;
@@ -41,6 +42,13 @@ public class ServerFacade {
     public void logout() throws ResponseException{
         var path = "/session";
         this.makeRequest("DELETE", path, null, null, true);
+    }
+
+    public double create(String name) throws ResponseException {
+        var path = "/game";
+        Map gameData = Map.of("gameName", name);
+        Map result = this.makeRequest("POST", path, gameData, Map.class, true);
+        return (double)result.get("gameID");
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, boolean needsAuth) throws ResponseException {

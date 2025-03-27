@@ -26,7 +26,7 @@ public class ChessClient {
                 //case "quit" -> quit();
                 case "register" -> register(params);
                 case "logout" -> logout();
-                //case "create" -> create(params);
+                case "create" -> create(params);
                 //case "list" -> list();
                 //case "join" -> join(params);
                 default -> help();
@@ -69,6 +69,19 @@ public class ChessClient {
             return ("You have successfully signed out. So long!");
         }
         throw new ResponseException(400, "Already signed out");
+    }
+
+    public String create(String... params) throws ResponseException{
+        if (state == State.SIGNEDIN){
+            if (params.length >= 1){
+                var name = params[0];
+
+                server.create(name);
+                return ("Created a game with the name \"" + name+ "\".");
+            }
+            throw new ResponseException(400, "Expected: <NAME>");
+        }
+        throw new ResponseException(400, "You need to be signed in to create a game.");
     }
 
     public String help(){
