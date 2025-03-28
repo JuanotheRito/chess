@@ -1,8 +1,6 @@
 package client;
 
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.SQLAuthDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -13,6 +11,8 @@ import server.ResponseException;
 import server.Server;
 import server.ServerFacade;
 import service.ClearService;
+
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -149,4 +149,33 @@ public class ServerFacadeTests {
         assertThrows(NullPointerException.class, () -> testServer.create(null));
     }
 
+    @Test
+    public void listSuccess(){
+        loginSetup();
+        GameData testGame;
+        GameDAO gameDAO = new SQLGameDAO();
+        ArrayList<GameData> gameList;
+        try{
+            testServer.create(gameName);
+            gameList = testServer.list();
+
+            testGame = gameDAO.getGame(1);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        assertEquals(testGame, gameList.getFirst());
+    }
+
+    @Test
+    public void noGames(){
+        loginSetup();
+
+        ArrayList<GameData> gameList;
+        try{
+            gameList = testServer.list();
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        assertNull(gameList.getFirst());
+    }
 }

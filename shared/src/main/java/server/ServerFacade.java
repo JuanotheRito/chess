@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class ServerFacade {
@@ -49,6 +50,12 @@ public class ServerFacade {
         Map gameData = Map.of("gameName", name);
         Map result = this.makeRequest("POST", path, gameData, Map.class, true);
         return (double)result.get("gameID");
+    }
+
+    public ArrayList<GameData> list() throws ResponseException {
+        var path = "/game";
+        Map result = this.makeRequest("GET", path, null, Map.class, true);
+        ArrayList<GameData> gameList = (ArrayList<GameData>)result.get("games");
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, boolean needsAuth) throws ResponseException {
