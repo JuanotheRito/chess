@@ -1,5 +1,7 @@
 package client;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.*;
 import model.AuthData;
 import model.GameData;
@@ -13,6 +15,7 @@ import server.ServerFacade;
 import service.ClearService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,7 +41,6 @@ public class ServerFacadeTests {
 
     @AfterAll
     static void stopServer() throws DataAccessException {
-        ClearService.clear();
         server.stop();
     }
 
@@ -60,6 +62,10 @@ public class ServerFacadeTests {
         }
     }
 
+    @BeforeEach
+    void resetData() throws DataAccessException {
+        ClearService.clear();
+    }
 
     @Test
     public void registerSuccess() {
@@ -121,24 +127,19 @@ public class ServerFacadeTests {
 
     @Test
     public void alreadyLoggedOut(){
-        try{
-            testServer.logout();
-        } catch (Exception ex){
-            throw new RuntimeException(ex);
-        }
         assertThrows(ResponseException.class, () -> testServer.logout());
     }
 
     @Test
     public void createSuccess(){
         loginSetup();
-        double actual;
+        int actual;
         try{
             actual = testServer.create(gameName);
         } catch (Exception ex){
             throw new RuntimeException(ex);
         }
-        double expected = 1;
+        int expected = 1;
         assertEquals(expected, actual);
     }
 
@@ -154,7 +155,7 @@ public class ServerFacadeTests {
         loginSetup();
         GameData testGame;
         GameDAO gameDAO = new SQLGameDAO();
-        ArrayList<GameData> gameList;
+        List<GameData> gameList;
         try{
             testServer.create(gameName);
             gameList = testServer.list();
@@ -170,7 +171,7 @@ public class ServerFacadeTests {
     public void noGames(){
         loginSetup();
 
-        ArrayList<GameData> gameList;
+        List<GameData> gameList;
         try{
             gameList = testServer.list();
         } catch (Exception e){
@@ -178,4 +179,5 @@ public class ServerFacadeTests {
         }
         assertNull(gameList.getFirst());
     }
+
 }

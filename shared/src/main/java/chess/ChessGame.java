@@ -14,11 +14,14 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-    ChessBoard board = new ChessBoard();
-    private ChessMove previous;
+    public ChessBoard board = new ChessBoard();
+    public ChessMove previous;
+    public TeamColor turn = TeamColor.WHITE;
+
     public ChessGame() {
         board.resetBoard();
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -33,8 +36,6 @@ public class ChessGame {
     public int hashCode() {
         return Objects.hash(board, previous, turn);
     }
-
-    TeamColor turn = TeamColor.WHITE;
 
     /**
      * @return Which team's turn it is

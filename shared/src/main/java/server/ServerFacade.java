@@ -1,6 +1,11 @@
 package server;
 
-import com.google.gson.Gson;
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -9,10 +14,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ServerFacade {
@@ -45,20 +52,23 @@ public class ServerFacade {
         this.makeRequest("DELETE", path, null, null, true);
     }
 
-    public double create(String name) throws ResponseException {
+    public int create(String name) throws ResponseException {
         var path = "/game";
         Map gameData = Map.of("gameName", name);
         Map result = this.makeRequest("POST", path, gameData, Map.class, true);
-        return (double)result.get("gameID");
+        double ID = (double)result.get("gameID");
+        return (int)ID;
     }
 
-    public ArrayList<GameData> list() throws ResponseException {
+    public List<GameData> list() throws ResponseException {
         var path = "/game";
-        Map result = this.makeRequest("GET", path, null, Map.class, true);
-        ArrayList<GameData> gameList = (ArrayList<GameData>)result.get("games");
+        record GameListResponse(List<GameData> games) {};
+        GameListResponse response;
+        response = makeRequest("GET", path, null, GameListResponse.class, true);
+        return response.games();
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, boolean needsAuth) throws ResponseException {
+    private <T> T makeRequest(String method, String path, Object request, Type responseClass, boolean needsAuth) throws ResponseException {
         try{
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -103,7 +113,7 @@ public class ServerFacade {
         }
     }
 
-    private static <T> T readBody (HttpURLConnection http, Class<T> responseClass) throws IOException {
+    private static <T> T readBody (HttpURLConnection http, Type responseClass) throws IOException {
         T response = null;
         if (http.getContentLength() < 0){
             try (InputStream respBody = http.getInputStream()) {
@@ -114,6 +124,19 @@ public class ServerFacade {
             }
         }
         return response;
+    }
+
+    public static Gson gameSerializer(){
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        gsonBuilder.registerTypeAdapter(ChessGame.class, (JsonDeserializer<ChessGame>) (el, type, ctx) -> {
+             ChessGame chessGame = null;
+             if (el.isJsonObject()) {
+                 JsonObject board = (JsonObject) el.getAsJsonObject().get("board");
+                 JsonArray squares = board.getAsJsonArray("board");
+                 ChessPiece piece;  
+             }
+        });
     }
 
     private boolean isSuccessful(int status){
