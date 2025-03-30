@@ -14,7 +14,7 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-    public ChessBoard board = new ChessBoard();
+    public static ChessBoard board = new ChessBoard();
     public ChessMove previous;
     public TeamColor turn = TeamColor.WHITE;
 

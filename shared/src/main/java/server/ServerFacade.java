@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -119,7 +120,7 @@ public class ServerFacade {
             try (InputStream respBody = http.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(respBody);
                 if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
+                    response = gameSerializer().fromJson(reader, responseClass);
                 }
             }
         }
@@ -130,13 +131,35 @@ public class ServerFacade {
         GsonBuilder gsonBuilder = new GsonBuilder();
 
         gsonBuilder.registerTypeAdapter(ChessGame.class, (JsonDeserializer<ChessGame>) (el, type, ctx) -> {
-             ChessGame chessGame = null;
+             ChessGame chessGame = new ChessGame();
              if (el.isJsonObject()) {
+                 ChessPiece[][] pieceArray = new ChessPiece[8][8];
+                 ChessBoard chessBoard = new ChessBoard();
                  JsonObject board = (JsonObject) el.getAsJsonObject().get("board");
                  JsonArray squares = board.getAsJsonArray("board");
-                 ChessPiece piece;  
+                 int ROWS = 8;
+                 int COLUMNS = 8;
+                 for (int i = 0; i < ROWS; i++){
+                     JsonArray row = squares.get(i).getAsJsonArray();
+                     for (int j = 0; j < COLUMNS; j++){
+                         JsonElement pieceElement = row.get(j);
+                         pieceArray[i][j] = ctx.deserialize(pieceElement, ChessPiece.class);
+                     }
+                 }
+                 chessBoard.board = pieceArray;
+                 JsonElement chessTurn = el.getAsJsonObject().get("turn");
+                 ChessGame.TeamColor turn = ctx.deserialize(chessTurn, ChessGame.TeamColor.class);
+
+                 ChessMove previous;
+                 JsonElement previousMove = el.getAsJsonObject().get("previous");
+                 previous = ctx.deserialize(previousMove, ChessMove.class);
+                 chessGame.setBoard(chessBoard);
+                 chessGame.setTeamTurn(turn);
+                 chessGame.previous = previous;
              }
+             return chessGame;
         });
+        return gsonBuilder.create();
     }
 
     private boolean isSuccessful(int status){

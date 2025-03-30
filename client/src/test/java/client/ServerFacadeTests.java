@@ -16,6 +16,7 @@ import service.ClearService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -177,7 +178,7 @@ public class ServerFacadeTests {
         } catch (Exception e){
             throw new RuntimeException(e);
         }
-        assertNull(gameList.getFirst());
+        assertThrows(NoSuchElementException.class, () -> gameList);
     }
 
 }
