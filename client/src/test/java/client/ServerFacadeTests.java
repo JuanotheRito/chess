@@ -9,6 +9,7 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.GameInfo;
 import server.ResponseException;
 import server.Server;
 import server.ServerFacade;
@@ -154,14 +155,14 @@ public class ServerFacadeTests {
     @Test
     public void listSuccess(){
         loginSetup();
-        GameData testGame;
+        GameInfo testGame;
         GameDAO gameDAO = new SQLGameDAO();
-        List<GameData> gameList;
+        List<GameInfo> gameList;
         try{
             testServer.create(gameName);
             gameList = testServer.list();
 
-            testGame = gameDAO.getGame(1);
+            testGame = new GameInfo("gg", null, null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -172,13 +173,13 @@ public class ServerFacadeTests {
     public void noGames(){
         loginSetup();
 
-        List<GameData> gameList;
+        List<GameInfo> gameList;
         try{
             gameList = testServer.list();
         } catch (Exception e){
             throw new RuntimeException(e);
         }
-        assertThrows(NoSuchElementException.class, () -> gameList);
+        assertThrows(NoSuchElementException.class, gameList::getFirst);
     }
 
 }

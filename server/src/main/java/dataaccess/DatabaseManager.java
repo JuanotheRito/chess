@@ -271,7 +271,6 @@ public class DatabaseManager {
                         var blackUsername = rs.getString("blackUsername");
                         var gameName = rs.getString("gameName");
                         var json = rs.getString("game");
-                        System.out.println("Retrieved game JSON from DB: " + json);
                         var game = serializer.fromJson(json, ChessGame.class);
 
                         GameData readGame = new GameData(id, whiteUsername, blackUsername, gameName, game);
