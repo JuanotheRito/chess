@@ -63,12 +63,17 @@ public class ServerFacade {
 
     public List<GameInfo> list() throws ResponseException {
         var path = "/game";
-        record GameListResponse(List<GameInfo> games) {
-        }
-        ;
+        record GameListResponse(List<GameInfo> games) {}
         GameListResponse response;
         response = makeRequest("GET", path, null, GameListResponse.class, true);
         return response.games();
+    }
+
+    public void join(ChessGame.TeamColor playerColor, int gameID) throws ResponseException {
+        var path = "/game";
+        record JoinRequest(ChessGame.TeamColor playerColor, int gameID){}
+        JoinRequest request = new JoinRequest(playerColor, gameID);
+        makeRequest("PUT", path, request, null, true);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Type responseClass, boolean needsAuth) throws ResponseException {

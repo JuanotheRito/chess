@@ -156,13 +156,12 @@ public class ServerFacadeTests {
     public void listSuccess(){
         loginSetup();
         GameInfo testGame;
-        GameDAO gameDAO = new SQLGameDAO();
         List<GameInfo> gameList;
         try{
             testServer.create(gameName);
             gameList = testServer.list();
 
-            testGame = new GameInfo("gg", null, null);
+            testGame = new GameInfo(1, "gg", null, null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -180,6 +179,36 @@ public class ServerFacadeTests {
             throw new RuntimeException(e);
         }
         assertThrows(NoSuchElementException.class, gameList::getFirst);
+    }
+
+    @Test
+    public void joinGameSuccess() throws DataAccessException {
+        loginSetup();
+        GameInfo game;
+        GameDAO gameDAO = new SQLGameDAO();
+        try {
+            testServer.create(gameName);
+            testServer.list();
+            testServer.join(ChessGame.TeamColor.WHITE, 1);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        GameInfo expected = new GameInfo(1, "gg", username, null);
+        GameData gameData = gameDAO.getGame(1);
+        game = new GameInfo(gameData.gameID(), gameData.gameName(), gameData.whiteUsername(), gameData.blackUsername());
+        assertEquals(expected, game);
+    }
+
+    @Test
+    public void alreadyJoined() {
+        loginSetup();
+        try {
+            testServer.create(gameName);
+            testServer.join(ChessGame.TeamColor.WHITE, 1);
+        }  catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        assertThrows(ResponseException.class, () -> testServer.join(ChessGame.TeamColor.WHITE, 1));
     }
 
 }

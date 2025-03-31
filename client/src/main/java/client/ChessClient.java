@@ -1,15 +1,17 @@
 package client;
 
-import org.glassfish.grizzly.http.server.Response;
+import server.GameInfo;
 import server.ResponseException;
 import server.ServerFacade;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
+    private List<GameInfo> gameList;
 
     public ChessClient (String serverUrl, Repl repl){
         server = new ServerFacade(serverUrl);
@@ -23,11 +25,11 @@ public class ChessClient {
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd){
                 case "login" -> login(params);
-                //case "quit" -> quit();
                 case "register" -> register(params);
                 case "logout" -> logout();
                 case "create" -> create(params);
-                //case "list" -> list();
+                case "list" -> list();
+                case "quit" -> "quit";
                 //case "join" -> join(params);
                 default -> help();
             };
@@ -84,6 +86,90 @@ public class ChessClient {
         throw new ResponseException(400, "You need to be signed in to create a game.");
     }
 
+    public String list() throws ResponseException{
+        String response = "";
+        if (state == State.SIGNEDIN) {
+            gameList = server.list();
+            String[] headers = {"#", "Name", "White Player", "Black Player"};
+            int[] columnWidths = formatList(gameList, headers);
+            for (int i =0; i < headers.length; i++){
+                response = response + String.format("%-" + columnWidths[i] + "s", headers[i]);
+                response = response + "     ";
+            }
+            response += "\n";
+            for (int i = 0 ; i < gameList.size(); i++){
+                response += printGame(gameList.get(i), i+1, columnWidths);
+                response = response + "\n";
+            }
+        }
+        return response;
+    }
+
+    public String printGame (GameInfo game, int gameNumber, int[] columnWidths){
+        String output = "";
+        output = output + String.format("%-" + columnWidths[0] + "s", gameNumber);
+        output = output + String.format("%-" + columnWidths[1] + "s", game.gameName());
+        if (game.whiteUsername() == null){
+            output = output + String.format("%-" + columnWidths[2] + "s", "Empty");
+        } else{
+            output = output + String.format("%-" + columnWidths[2] + "s", game.whiteUsername());
+        }
+        if (game.blackUsername() == null){
+            output = output + String.format("%-" + columnWidths[3] + "s", "Empty");
+        } else{
+            output = output + String.format("%-" + columnWidths[3] + "s", game.blackUsername());
+        }
+        return output;
+    }
+
+    public String isBigger(String leftHand, String rightHand){
+        if (rightHand.length() > leftHand.length()){
+            return rightHand;
+        } else{
+            return leftHand;
+        }
+    }
+
+    public int[] formatList(List<GameInfo> gameList, String[] headers){
+        int [] columnWidths = new int[4];
+        for (int i = 0; i < columnWidths.length; i++){
+            columnWidths[i] = headers[i].length();
+        }
+        for (int i = 0; i < 4; i++){
+            String longest = "";
+            switch (i) {
+                case 0 -> {
+                    int biggestNumber = gameList.size();
+                    longest = String.valueOf(biggestNumber);
+                }
+                case 1 -> {
+                    longest = "";
+                    for (GameInfo gameInfo : gameList) {
+                        String current = gameInfo.gameName();
+                        longest = isBigger(longest, current);
+                    }
+                }
+                case 2 -> {
+                    longest = "";
+                    for (GameInfo gameInfo : gameList) {
+                        String current = gameInfo.whiteUsername();
+                        longest = isBigger(longest, current);
+                    }
+                }
+                case 3 ->{
+                    longest = "";
+                    for (GameInfo gameInfo : gameList) {
+                        String current = gameInfo.blackUsername();
+                        longest = isBigger(longest, current);
+                    }
+                }
+            }
+            if (columnWidths[i] < longest.length()){
+                columnWidths[i] = longest.length();
+            }
+        }
+        return columnWidths;
+    }
     public String help(){
         if (state == State.SIGNEDOUT){
             return"""
