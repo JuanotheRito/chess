@@ -57,8 +57,8 @@ public class ServerFacade {
         var path = "/game";
         Map gameData = Map.of("gameName", name);
         Map result = this.makeRequest("POST", path, gameData, Map.class, true);
-        double ID = (double) result.get("gameID");
-        return (int) ID;
+        double id = (double) result.get("gameID");
+        return (int) id;
     }
 
     public List<GameInfo> list() throws ResponseException {
@@ -156,11 +156,11 @@ public class ServerFacade {
                 ChessBoard chessBoard = new ChessBoard();
                 JsonObject board = (JsonObject) el.getAsJsonObject().get("board");
                 JsonArray squares = board.getAsJsonArray("board");
-                int ROWS = 8;
-                int COLUMNS = 8;
-                for (int i = 0; i < ROWS; i++) {
+                int rows = 8;
+                int columns = 8;
+                for (int i = 0; i < rows; i++) {
                     JsonArray row = squares.get(i).getAsJsonArray();
-                    for (int j = 0; j < COLUMNS; j++) {
+                    for (int j = 0; j < columns; j++) {
                         JsonElement pieceElement = row.get(j);
                         pieceArray[i][j] = ctx.deserialize(pieceElement, ChessPiece.class);
                     }

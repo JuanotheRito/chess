@@ -24,14 +24,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
-    private static final Logger log = LoggerFactory.getLogger(ServerFacadeTests.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServerFacadeTests.class);
     private static Server server;
-    private final static UserData testUser = new UserData("CosmoCougar", "GoCougs!", "cosmo@byu.edu");
+    private final static UserData TEST_USER = new UserData("CosmoCougar", "GoCougs!", "cosmo@byu.edu");
     private static ServerFacade testServer;
-    static String username = testUser.username();
-    static String password = testUser.password();
-    static String email = testUser.email();
-    private final static String gameName = "gg";
+    static String username = TEST_USER.username();
+    static String password = TEST_USER.password();
+    static String email = TEST_USER.email();
+    private final static String GAME_NAME = "gg";
 
     @BeforeAll
     public static void init() {
@@ -137,7 +137,7 @@ public class ServerFacadeTests {
         loginSetup();
         int actual;
         try{
-            actual = testServer.create(gameName);
+            actual = testServer.create(GAME_NAME);
         } catch (Exception ex){
             throw new RuntimeException(ex);
         }
@@ -158,7 +158,7 @@ public class ServerFacadeTests {
         GameInfo testGame;
         List<GameInfo> gameList;
         try{
-            testServer.create(gameName);
+            testServer.create(GAME_NAME);
             gameList = testServer.list();
 
             testGame = new GameInfo(1, "gg", null, null);
@@ -187,7 +187,7 @@ public class ServerFacadeTests {
         GameInfo game;
         GameDAO gameDAO = new SQLGameDAO();
         try {
-            testServer.create(gameName);
+            testServer.create(GAME_NAME);
             testServer.list();
             testServer.join(ChessGame.TeamColor.WHITE, 1);
         } catch (Exception e) {
@@ -203,7 +203,7 @@ public class ServerFacadeTests {
     public void alreadyJoined() {
         loginSetup();
         try {
-            testServer.create(gameName);
+            testServer.create(GAME_NAME);
             testServer.join(ChessGame.TeamColor.WHITE, 1);
         }  catch (Exception e){
             throw new RuntimeException(e);
