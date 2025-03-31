@@ -3,9 +3,9 @@ package client;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
-import server.GameInfo;
-import server.ResponseException;
-import server.ServerFacade;
+import server_facade.GameInfo;
+import server_facade.ResponseException;
+import server_facade.ServerFacade;
 
 import java.util.Arrays;
 import java.util.List;

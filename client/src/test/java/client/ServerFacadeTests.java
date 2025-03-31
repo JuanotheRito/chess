@@ -1,7 +1,6 @@
 package client;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import dataaccess.*;
 import model.AuthData;
 import model.GameData;
@@ -9,13 +8,12 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import server.GameInfo;
-import server.ResponseException;
+import server_facade.GameInfo;
+import server_facade.ResponseException;
 import server.Server;
-import server.ServerFacade;
+import server_facade.ServerFacade;
 import service.ClearService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
