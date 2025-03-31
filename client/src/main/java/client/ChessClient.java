@@ -1,5 +1,8 @@
 package client;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
 import server.GameInfo;
 import server.ResponseException;
 import server.ServerFacade;
@@ -7,13 +10,15 @@ import server.ServerFacade;
 import java.util.Arrays;
 import java.util.List;
 
+import static ui.EscapeSequences.*;
+
 public class ChessClient {
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private List<GameInfo> gameList;
 
-    public ChessClient (String serverUrl, Repl repl){
+    public ChessClient (String serverUrl){
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
     }
@@ -30,7 +35,8 @@ public class ChessClient {
                 case "create" -> create(params);
                 case "list" -> list();
                 case "quit" -> "quit";
-                //case "join" -> join(params);
+                case "join" -> join(params);
+                case "observe" -> observe(params);
                 default -> help();
             };
         } catch (ResponseException ex){
@@ -38,7 +44,7 @@ public class ChessClient {
         }
     }
     public String register(String... params) throws ResponseException{
-        if (params.length >= 3){
+        if (params.length == 3){
             var username = params[0];
             var password = params[1];
             var email = params[2];
@@ -51,13 +57,16 @@ public class ChessClient {
 
     public String login(String... params) throws ResponseException {
         if (state == State.SIGNEDOUT) {
-            if (params.length >= 2) {
+            if (params.length == 2) {
                 var username = params[0];
                 var password = params[1];
-
-                server.login(username, password);
-                state = State.SIGNEDIN;
-                return ("Welcome " + username + "! Type \"help\" to get a list of commands.");
+                try {
+                    server.login(username, password);
+                    state = State.SIGNEDIN;
+                    return ("Welcome " + username + "! Type \"help\" to get a list of commands.");
+                } catch (Exception e) {
+                    throw new ResponseException(400, "Incorrect Login info. Please try again");
+                }
             }
             throw new ResponseException(400, "Expected: <USERNAME> <PASSWORD>");
         }
@@ -107,17 +116,17 @@ public class ChessClient {
 
     public String printGame (GameInfo game, int gameNumber, int[] columnWidths){
         String output = "";
-        output = output + String.format("%-" + columnWidths[0] + "s", gameNumber);
-        output = output + String.format("%-" + columnWidths[1] + "s", game.gameName());
+        output = output + String.format("%-" + columnWidths[0] + "s", gameNumber) + "     ";
+        output = output + String.format("%-" + columnWidths[1] + "s", game.gameName()) + "     ";
         if (game.whiteUsername() == null){
-            output = output + String.format("%-" + columnWidths[2] + "s", "Empty");
+            output = output + String.format("%-" + columnWidths[2] + "s", "Empty")+ "     ";
         } else{
-            output = output + String.format("%-" + columnWidths[2] + "s", game.whiteUsername());
+            output = output + String.format("%-" + columnWidths[2] + "s", game.whiteUsername())+"     ";
         }
         if (game.blackUsername() == null){
-            output = output + String.format("%-" + columnWidths[3] + "s", "Empty");
+            output = output + String.format("%-" + columnWidths[3] + "s", "Empty")+"     ";
         } else{
-            output = output + String.format("%-" + columnWidths[3] + "s", game.blackUsername());
+            output = output + String.format("%-" + columnWidths[3] + "s", game.blackUsername())+"     ";
         }
         return output;
     }
@@ -153,14 +162,18 @@ public class ChessClient {
                     longest = "";
                     for (GameInfo gameInfo : gameList) {
                         String current = gameInfo.whiteUsername();
-                        longest = isBigger(longest, current);
+                        if (!(current == null)){
+                            longest = isBigger(longest, current);
+                        }
                     }
                 }
                 case 3 ->{
                     longest = "";
                     for (GameInfo gameInfo : gameList) {
                         String current = gameInfo.blackUsername();
-                        longest = isBigger(longest, current);
+                        if (!(current == null)){
+                            longest = isBigger(longest, current);
+                        }
                     }
                 }
             }
@@ -170,6 +183,159 @@ public class ChessClient {
         }
         return columnWidths;
     }
+
+    public String join(String ... params) throws ResponseException {
+        ChessBoard chessBoard = new ChessBoard();
+        chessBoard.resetBoard();
+        if (state == State.SIGNEDIN) {
+            if (params.length == 2) {
+                if (gameList == null){
+                    throw new ResponseException(400, "Please type \"list\" to get a list of games before attempting to join one.");
+                }
+                int id;
+                if (isInteger(params[0])){
+                    try {
+                        id = Integer.parseInt(params[0]);
+                    } catch (NumberFormatException e){
+                        throw new ResponseException(400, "Expected: <ID> [WHITE|BLACK]");
+                    }
+                    switch (params[1].toUpperCase()){
+                        case "WHITE":
+                            try {
+                                server.join(ChessGame.TeamColor.WHITE, gameList.get(id - 1).gameID());
+                                System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
+                                        " Have fun!");
+                                return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
+                            } catch (Exception e){
+                                throw new ResponseException(400, "That spot is already taken");
+                            }
+                        case "BLACK":
+                            try {
+                                System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
+                                        " Have fun!");
+                                return printBoard(ChessGame.TeamColor.BLACK, chessBoard);
+                            } catch (Exception e) {
+                                throw new ResponseException(400, "That spot is already taken");
+                            }
+                    }
+                }
+            }
+            throw new ResponseException(400, "Expected: <ID> [WHITE|BLACK]");
+        } throw new ResponseException(400, "You need to be signed in to join a game.");
+    }
+
+    public boolean isInteger (String str){
+        if (str == null || str.isEmpty()){
+            return false;
+        }
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e){
+            return false;
+        }
+    }
+
+    public String observe(String... params) throws ResponseException {
+        ChessBoard chessBoard = new ChessBoard();
+        chessBoard.resetBoard();
+        if (state == State.SIGNEDIN){
+            if (params.length == 1){
+                if (isInteger(params[0])) {
+                    try {
+                        Integer.parseInt(params[0]);
+                        return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
+                    } catch (NumberFormatException e) {
+                        throw new ResponseException(400, "Expected: <ID>");
+                    }
+                }
+            }throw new ResponseException(400, "Expected: <ID>");
+        } throw new ResponseException(400, "You need to be signed in to spectate a game.");
+    }
+    public String printBoard (ChessGame.TeamColor teamColor, ChessBoard chessBoard){
+        String board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +  "    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
+        boolean white = true;
+        for (int i = 8; i > 0; i--){
+            board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + " " + i + " ";
+            for (int f = 0; f < 8; f++){
+                if (white){
+                    board += SET_BG_COLOR_WHITE;
+                } else {
+                    board += SET_BG_COLOR_DARK_GREY;
+                }
+                white = !white;
+                ChessPiece piece = chessBoard.getBoard()[i-1][f];
+                if (piece != null) {
+                    switch (piece.getTeamColor()) {
+                        case WHITE -> board += pieceType(ChessGame.TeamColor.WHITE, piece.getPieceType());
+                        case BLACK -> board += pieceType(ChessGame.TeamColor.BLACK, piece.getPieceType());
+                    }
+                }
+                else {
+                    board += "   ";
+                }
+            }
+            white = !white;
+            board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + " " + i + " ";
+            board += RESET_BG_COLOR + "\n";
+        }
+        board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +"    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
+        if (teamColor == ChessGame.TeamColor.BLACK){
+            board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR +"\n";
+            white = false;
+            for (int x = 1; x < 9; x++){
+                board += SET_BG_COLOR_LIGHT_GREY + " " + x + " ";
+                for (int y = 7; y >= 0; y--){
+                    if (white){
+                        board += SET_BG_COLOR_WHITE;
+                    } else {
+                        board += SET_BG_COLOR_DARK_GREY;
+                    }
+                    white = !white;
+                    ChessPiece piece = chessBoard.getBoard()[x-1][y];
+                    if (piece != null) {
+                        switch (piece.getTeamColor()) {
+                            case WHITE -> board += pieceType(ChessGame.TeamColor.WHITE, piece.getPieceType());
+                            case BLACK -> board += pieceType(ChessGame.TeamColor.BLACK, piece.getPieceType());
+                        }
+                    }
+                    else {
+                        board += "   ";
+                    }
+                }
+                white = !white;
+                board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + " " + x + " ";
+                board += RESET_BG_COLOR + "\n";
+            }
+            board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR +"\n" + RESET_TEXT_COLOR;
+        }
+        return board;
+    }
+
+    public String pieceType(ChessGame.TeamColor color, ChessPiece.PieceType type){
+        if (color == ChessGame.TeamColor.WHITE){
+            return switch(type){
+                case PAWN ->  SET_TEXT_COLOR_RED + " P ";
+                case ROOK -> SET_TEXT_COLOR_RED + " R ";
+                case BISHOP ->    SET_TEXT_COLOR_RED + " B ";
+                case KNIGHT ->    SET_TEXT_COLOR_RED + " N ";
+                case KING ->    SET_TEXT_COLOR_RED + " K ";
+                case QUEEN ->   SET_TEXT_COLOR_RED + " Q ";
+            };
+        }
+        if (color == ChessGame.TeamColor.BLACK) {
+            return switch (type) {
+                case PAWN ->   SET_TEXT_COLOR_BLUE + " P ";
+                case ROOK ->   SET_TEXT_COLOR_BLUE + " R ";
+                case BISHOP ->   SET_TEXT_COLOR_BLUE + " B ";
+                case KNIGHT ->   SET_TEXT_COLOR_BLUE + " N ";
+                case KING ->   SET_TEXT_COLOR_BLUE + " K ";
+                case QUEEN ->  SET_TEXT_COLOR_BLUE + " Q ";
+            };
+        }
+        return "";
+    }
+
     public String help(){
         if (state == State.SIGNEDOUT){
             return"""
