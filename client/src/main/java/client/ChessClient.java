@@ -48,9 +48,13 @@ public class ChessClient {
             var username = params[0];
             var password = params[1];
             var email = params[2];
-            server.register(username, password, email);
-            state = State.SIGNEDIN;
-            return ("Welcome " + username + "! Type \"help\" to get a list of commands.");
+            try {
+                server.register(username, password, email);
+                state = State.SIGNEDIN;
+                return ("Welcome " + username + "! Type \"help\" to get a list of commands.");
+            } catch (ResponseException e){
+                throw new ResponseException(400, "This user already exists");
+            }
         }
         throw new ResponseException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>");
     }
@@ -206,16 +210,17 @@ public class ChessClient {
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
                                         " Have fun!");
                                 return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
-                            } catch (Exception e){
-                                throw new ResponseException(400, "That spot is already taken");
+                            } catch (ResponseException e){
+                                throw new ResponseException(400, "That spot is either taken or doesn't exist");
                             }
                         case "BLACK":
                             try {
+                                server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
                                         " Have fun!");
                                 return printBoard(ChessGame.TeamColor.BLACK, chessBoard);
-                            } catch (Exception e) {
-                                throw new ResponseException(400, "That spot is already taken");
+                            } catch (ResponseException e) {
+                                throw new ResponseException(400, "That spot is either taken or doesn't exist");
                             }
                     }
                 }
@@ -282,7 +287,7 @@ public class ChessClient {
         board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +"    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
         if (teamColor == ChessGame.TeamColor.BLACK){
             board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR +"\n";
-            white = false;
+            white = true;
             for (int x = 1; x < 9; x++){
                 board += SET_BG_COLOR_LIGHT_GREY + " " + x + " ";
                 for (int y = 7; y >= 0; y--){
