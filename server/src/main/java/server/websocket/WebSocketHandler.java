@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
@@ -65,14 +66,52 @@ public class WebSocketHandler {
 
         if (command instanceof MakeMoveCommand moveCommand){
             ChessMove move = moveCommand.move();
-            ChessGame game = new SQLGameDAO().getGame(connection.gameID).game();
+            GameData gameData = new SQLGameDAO().getGame(connection.gameID);
+            ChessGame game = gameData.game();
+            ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
             try {
+                if (username.equals(gameData.whiteUsername())){
+                    if (!piece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                        throw new InvalidMoveException("Not your piece");
+                    }
+                }
+                if (username.equals(gameData.blackUsername())){
+                    if (!piece.getTeamColor().equals(ChessGame.TeamColor.BLACK)){
+                        throw new InvalidMoveException("Not your piece");
+                    }
+                }
                 game.makeMove(move);
                 new SQLGameDAO().updateGame(new SQLGameDAO().getGame(connection.gameID), game);
-                LoadGameMessage message = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                ServerMessage message = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
                 connections.broadcast(null, connection.gameID, message);
+                String update = String.format("%s has moved %s to %s", piece.getTeamColor().toString(),
+                        piece.getPieceType().toString(),
+                        move.getEndPosition().toString()
+                );
+                message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
+                connections.broadcast(authToken, connection.gameID, message);
+                if (game.isInCheck(game.getTeamTurn())){
+                    update = String.format("%s is in check!", game.getTeamTurn().toString());
+                    message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
+                    connections.broadcast(null, connection.gameID, message);
+                }
+                if (game.isInCheckmate(game.getTeamTurn())){
+                    update = String.format("%s is in checkmate! Game over! %s wins!",
+                            game.getTeamTurn().toString(),
+                            piece.getTeamColor().toString()
+                    );
+                    message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
+                    connections.broadcast(null, connection.gameID, message);
+                }
+                if (game.isInStalemate(game.getTeamTurn())){
+                    update = String.format("%s is in stalemate! Game over! The game ends in a draw!",
+                            game.getTeamTurn().toString()
+                    );
+                    message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
+                    connections.broadcast(null, connection.gameID, message);
+                }
             } catch (InvalidMoveException e) {
-                throw new ResponseException(400, "That move is illegal");
+                throw new ResponseException(400, e.getMessage());
             } catch (DataAccessException e){
                 throw new ResponseException (500, "Unable to make move");
             }

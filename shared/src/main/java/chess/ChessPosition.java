@@ -28,6 +28,24 @@ public class ChessPosition {
     }
 
     @Override
+    public String toString() {
+        String string;
+        switch (col){
+            case 1 -> string = "a";
+            case 2 -> string = "b";
+            case 3 -> string = "c";
+            case 4 -> string = "d";
+            case 5 -> string = "e";
+            case 6 -> string = "f";
+            case 7 -> string = "g";
+            case 8 -> string = "h";
+            default -> string = "";
+        }
+        string += row;
+        return string;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(col, row);
     }
