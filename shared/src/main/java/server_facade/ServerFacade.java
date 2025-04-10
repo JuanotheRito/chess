@@ -187,4 +187,8 @@ public class ServerFacade {
     private boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
+
+    public String authToken() {
+        return authToken;
+    }
 }

@@ -1,18 +1,18 @@
 package client;
 import client.websocket.NotificationHandler;
+import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
 import java.util.Scanner;
 
-import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
-import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
+import static ui.EscapeSequences.*;
 
 public class Repl implements NotificationHandler {
 
     private final ChessClient client;
 
     public Repl(String serverUrl){
-        client = new ChessClient(serverUrl);
+        client = new ChessClient(serverUrl, this);
     }
 
     public void run(){
@@ -21,6 +21,7 @@ public class Repl implements NotificationHandler {
 
         Scanner scanner = new Scanner(System.in);
         while (!result.equals("quit")) {
+            printPrompt();
             String line = scanner.nextLine();
 
             try {
@@ -35,6 +36,11 @@ public class Repl implements NotificationHandler {
     }
 
     public void notify(ServerMessage notification){
-        System.out.println(SET_TEXT_COLOR_RED + )
+        System.out.println(SET_TEXT_COLOR_RED + notification.message());
+        printPrompt();
+    }
+
+    private void printPrompt() {
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 }

@@ -3,10 +3,11 @@ package client;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
-import model.GameData;
+import client.websocket.NotificationHandler;
 import server_facade.GameInfo;
 import server_facade.ResponseException;
 import server_facade.ServerFacade;
+import client.websocket.WebSocketFacade;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,9 +20,11 @@ public class ChessClient {
     private State state = State.SIGNEDOUT;
     private List<GameInfo> gameList;
     private boolean resign = false;
-    private GameData currentGame = null;
+    private WebSocketFacade ws;
+    private final NotificationHandler notificationHandler;
 
-    public ChessClient (String serverUrl){
+    public ChessClient (String serverUrl, NotificationHandler notificationHandler){
+        this.notificationHandler = notificationHandler;
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
     }
@@ -227,6 +230,8 @@ public class ChessClient {
                         case "WHITE":
                             try {
                                 server.join(ChessGame.TeamColor.WHITE, gameList.get(id - 1).gameID());
+                                ws = new WebSocketFacade(serverUrl, notificationHandler);
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID());
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
                                         " Have fun!");
 
@@ -238,6 +243,8 @@ public class ChessClient {
                         case "BLACK":
                             try {
                                 server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
+                                ws = new WebSocketFacade(serverUrl, notificationHandler);
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID());
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
                                         " Have fun!");
                                 state = State.INGAME;
