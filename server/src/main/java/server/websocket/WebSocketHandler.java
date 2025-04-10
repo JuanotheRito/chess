@@ -1,10 +1,15 @@
 package server.websocket;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
+import dataaccess.SQLAuthDAO;
+import dataaccess.SQLUserDAO;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Notification;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 
@@ -24,7 +29,18 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(String authToken, Session session, int gameID){
+    private void connect(String authToken, Session session, int gameID) throws IOException {
+        connections.add(authToken, gameID, session);
+        String username;
 
+        try {
+            username = new SQLAuthDAO().getAuth(authToken).username();
+        } catch (DataAccessException e) {
+            username = "Unknown";
+        }
+
+        var message = String.format("%s has joined the game", username);
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(authToken, gameID, notification);
     }
 }
