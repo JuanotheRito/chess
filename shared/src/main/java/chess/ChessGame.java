@@ -17,6 +17,7 @@ public class ChessGame {
     public static ChessBoard board = new ChessBoard();
     public ChessMove previous;
     public TeamColor turn = TeamColor.WHITE;
+    public boolean gameOver = false;
 
     public ChessGame() {
         board.resetBoard();
@@ -172,6 +173,9 @@ public class ChessGame {
     }
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (gameOver){
+            throw new InvalidMoveException("The game has ended");
+        };
         ChessMove targetMove = null;
         ChessPiece piece = board.getPiece(move.getStartPosition());
         String message;

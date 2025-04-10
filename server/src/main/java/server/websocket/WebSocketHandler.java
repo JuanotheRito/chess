@@ -39,14 +39,7 @@ public class WebSocketHandler {
 
     private void connect(String authToken, Session session, int gameID) throws IOException {
         connections.add(authToken, gameID, session);
-        String username;
-
-        try {
-            username = new SQLAuthDAO().getAuth(authToken).username();
-        } catch (DataAccessException e) {
-            username = "Unknown";
-        }
-
+        String username = getUsername(authToken);
         var message = String.format("%s has joined the game", username);
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(authToken, gameID, notification);
@@ -56,14 +49,7 @@ public class WebSocketHandler {
 
     private void makeMove(String authToken, UserGameCommand command) throws ResponseException, IOException {
         Connection connection = connections.connections.get(authToken);
-        String username;
-
-        try {
-            username = new SQLAuthDAO().getAuth(authToken).username();
-        } catch (DataAccessException e) {
-            username = "Unknown";
-        }
-
+        String username = getUsername(authToken);
         if (command instanceof MakeMoveCommand moveCommand){
             ChessMove move = moveCommand.move();
             GameData gameData = new SQLGameDAO().getGame(connection.gameID);
@@ -124,13 +110,7 @@ public class WebSocketHandler {
 
     private void leave(String authToken) throws IOException, ResponseException {
         int gameID = connections.connections.get(authToken).gameID;
-        String username;
-
-        try {
-            username = new SQLAuthDAO().getAuth(authToken).username();
-        } catch (DataAccessException e) {
-            username = "Unknown";
-        }
+        String username = getUsername(authToken);
         GameData game = new SQLGameDAO().getGame(gameID);
         if(username.equals(game.blackUsername())){
             try {
@@ -149,5 +129,33 @@ public class WebSocketHandler {
         var message = String.format("%s has left the game", username);
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(authToken, gameID, notification);
+    }
+
+    private void resign(String authToken) throws IOException, ResponseException {
+        Connection connection = connections.connections.get(authToken);
+        int gameID = connection.gameID;
+        String username = getUsername(authToken);
+        GameData gameData = new SQLGameDAO().getGame(connection.gameID);
+        ChessGame game = gameData.game();
+        game.gameOver = true;
+        try {
+            new SQLGameDAO().updateGame(gameData, game);
+        } catch (DataAccessException e) {
+            String error = "Unable to end game because" + e.getMessage();
+            throw new ResponseException(500, error);
+        }
+        String update = String.format("%s has resigned.",
+                username
+        );
+        ServerMessage message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
+        connections.broadcast(null, gameID, message);
+    }
+
+    private String getUsername(String authToken){
+        try {
+            return new SQLAuthDAO().getAuth(authToken).username();
+        } catch (DataAccessException e) {
+            return "Unknown";
+        }
     }
 }
