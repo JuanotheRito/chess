@@ -1,9 +1,13 @@
 package client;
+import client.websocket.NotificationHandler;
+import websocket.messages.ServerMessage;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
 
-public class Repl {
+public class Repl implements NotificationHandler {
 
     private final ChessClient client;
 
@@ -28,5 +32,9 @@ public class Repl {
             }
         }
         System.out.println();
+    }
+
+    public void notify(ServerMessage notification){
+        System.out.println(SET_TEXT_COLOR_RED + )
     }
 }

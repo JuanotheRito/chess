@@ -4,7 +4,9 @@ import dataaccess.*;
 import spark.*;
 
 public class Server {
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler();
     public int run(int desiredPort) {
+
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
@@ -22,7 +24,7 @@ public class Server {
         Spark.post("/game", Handler::createHandler);
         Spark.get("/game", Handler::listHandler);
         Spark.put("/game", Handler::joinHandler);
-        Spark.webSocket("/ws", WebSocketHandler);
+        Spark.webSocket("/ws", webSocketHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();

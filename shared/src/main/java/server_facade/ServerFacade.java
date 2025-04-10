@@ -71,6 +71,11 @@ public class ServerFacade {
         record JoinRequest(ChessGame.TeamColor playerColor, int gameID){}
         JoinRequest request = new JoinRequest(playerColor, gameID);
         makeRequest("PUT", path, request, null, true);
+        wsRequest();
+    }
+
+    public void wsRequest(){
+        var path = "/ws";
     }
 
     private <T> T makeRequest(String method, String path, Object request, Type responseClass, boolean needsAuth) throws ResponseException {

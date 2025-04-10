@@ -3,6 +3,7 @@ package client;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
+import model.GameData;
 import server_facade.GameInfo;
 import server_facade.ResponseException;
 import server_facade.ServerFacade;
@@ -17,6 +18,8 @@ public class ChessClient {
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private List<GameInfo> gameList;
+    private boolean resign = false;
+    private GameData currentGame = null;
 
     public ChessClient (String serverUrl){
         server = new ServerFacade(serverUrl);
@@ -28,6 +31,15 @@ public class ChessClient {
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            if (resign){
+                switch (cmd){
+                    case "y", "yes" -> {return resign();}
+                    case "n", "no" -> {
+                        resign = false;
+                        return "";
+                    }
+                }
+            }
             return switch (cmd){
                 case "login" -> login(params);
                 case "register" -> register(params);
@@ -37,6 +49,11 @@ public class ChessClient {
                 case "quit" -> "quit";
                 case "join" -> join(params);
                 case "observe" -> observe(params);
+                case "leave" -> leave();
+                case "redraw" -> redraw();
+                case "move" -> move(params);
+                case "resign" -> resign();
+                case "legalmoves" -> legal(params);
                 default -> help();
             };
         } catch (ResponseException ex){
@@ -82,6 +99,9 @@ public class ChessClient {
             server.logout();
             state = State.SIGNEDOUT;
             return ("You have successfully signed out. So long!");
+        }
+        else if (state == State.INGAME || state == State.SPECTATE){
+            throw new ResponseException(400, "You must leave the game you are currently playing/spectating first.");
         }
         throw new ResponseException(400, "Already signed out");
     }
@@ -209,6 +229,8 @@ public class ChessClient {
                                 server.join(ChessGame.TeamColor.WHITE, gameList.get(id - 1).gameID());
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
                                         " Have fun!");
+
+                                state = State.INGAME;
                                 return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
                             } catch (ResponseException e){
                                 throw new ResponseException(400, "That spot is either taken or doesn't exist");
@@ -218,6 +240,7 @@ public class ChessClient {
                                 server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
                                         " Have fun!");
+                                state = State.INGAME;
                                 return printBoard(ChessGame.TeamColor.BLACK, chessBoard);
                             } catch (ResponseException e) {
                                 throw new ResponseException(400, "That spot is either taken or doesn't exist");
@@ -249,6 +272,7 @@ public class ChessClient {
                 if (isInteger(params[0])) {
                     try {
                         Integer.parseInt(params[0]);
+                        state = State.SPECTATE;
                         return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
                     } catch (NumberFormatException e) {
                         throw new ResponseException(400, "Expected: <ID>");
@@ -257,6 +281,34 @@ public class ChessClient {
             }throw new ResponseException(400, "Expected: <ID>");
         } throw new ResponseException(400, "You need to be signed in to spectate a game.");
     }
+
+    public String leave() throws ResponseException {
+        if (state == State.INGAME || state == State.SPECTATE){
+                state = State.SIGNEDIN;
+                return "You have left the game.";
+        }
+        throw new ResponseException(400, "You are not currently in a game");
+    }
+
+    public String redraw() throws ResponseException{
+        printBoard()
+    }
+
+    public String move(String... params){}
+
+    public String resign(){
+        if (!resign){
+            resign = true;
+            return ("Are you sure? Resigning will cause a loss!");
+        }
+        else{
+            resign = false;
+            return ("You have resigned.");
+        }
+    };
+
+    public String legal(String... params){}
+
     public String printBoard (ChessGame.TeamColor teamColor, ChessBoard chessBoard){
         String board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +  "    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
         boolean white = true;
@@ -342,22 +394,38 @@ public class ChessClient {
     }
 
     public String help(){
-        if (state == State.SIGNEDOUT){
-            return"""
-            \u001b[32mregister <USERNAME> <PASSWORD> <EMAIL> - \u001b[34mcreate an account
-            \u001b[32mlogin <USERNAME> <PASSWORD> - \u001b[34mlogin to play chess
-            \u001b[32mquit - \u001b[34mclose the chess client
-            \u001b[32mhelp - \u001b[34mlist possible commands
-            """;
+        String res = "";
+        switch (state) {
+            case State.SIGNEDOUT -> res = """
+                    \u001b[32mregister <USERNAME> <PASSWORD> <EMAIL> - \u001b[34mcreate an account
+                    \u001b[32mlogin <USERNAME> <PASSWORD> - \u001b[34mlogin to play chess
+                    \u001b[32mquit - \u001b[34mclose the chess client
+                    \u001b[32mhelp - \u001b[34mlist possible commands
+                    """;
+
+            case State.SIGNEDIN -> res = """
+                    \u001b[32mcreate <NAME> - \u001b[34mcreate a game
+                    \u001b[32mlist - \u001b[34mlist current games
+                    \u001b[32mjoin <ID> [WHITE|BLACK] - \u001b[34mjoin a game as white or black
+                    \u001b[32mobserve <ID> - \u001b[34mspectate a game
+                    \u001b[32mlogout - \u001b[34mlogout of your chess account
+                    \u001b[32mquit - \u001b[34mclose the chess client
+                    \u001b[32mhelp - \u001b[34mlist possible commands
+                    """;
+
+            case State.SPECTATE ->  res = """
+                    \u001b[32mleave - \u001b[34mleave the game you are currently spectating
+                    \u001b[32mhelp - \u001b[34mlist possible commands
+                    """;
+
+            case State.INGAME -> res = """
+                    \u001b[32mredraw - \u001b[34mredraw the current chess board
+                    \u001b[32mleave - \u001b[34mleave the game you are currently playing
+                    \u001b[32mmove <SPACE1> <SPACE2> [WHITE|BLACK] - \u001b[34mmove the piece at Space 1 to Space 2
+                    \u001b[32mresign - \u001b[34mforfeit the current game
+                    \u001b[32mlegalmoves <SPACE> - \u001b[34mhighlight the legal moves of the piece at the given space
+                    """;
         }
-        return """
-            \u001b[32mcreate <NAME> - \u001b[34mcreate a game
-            \u001b[32mlist - \u001b[34mlist current games
-            \u001b[32mjoin <ID> [WHITE|BLACK] - \u001b[34mjoin a game as white or black
-            \u001b[32mobserve <ID> - \u001b[34mspectate a game
-            \u001b[32mlogout - \u001b[34mlogout of your chess account
-            \u001b[32mquit - \u001b[34mclose the chess client
-            \u001b[32mhelp - \u001b[34mlist possible commands
-            """;
+        return res;
     }
 }
