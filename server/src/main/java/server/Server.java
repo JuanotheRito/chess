@@ -22,6 +22,7 @@ public class Server {
         Spark.post("/game", Handler::createHandler);
         Spark.get("/game", Handler::listHandler);
         Spark.put("/game", Handler::joinHandler);
+        Spark.webSocket("/ws", WebSocketHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();

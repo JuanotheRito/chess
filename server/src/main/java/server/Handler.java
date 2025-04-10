@@ -126,27 +126,29 @@ public class Handler {
         return serializer.toJson(new GameInfoList(infoList));
     }
 
-    public static Object joinHandler(Request req, Response res){
+    public static Object joinHandler(Request req, Response res) {
         var serializer = new Gson();
         Object result = null;
-        record ErrorMessage(String message){}
-        record JoinInfo(ChessGame.TeamColor playerColor, int gameID){}
+        record ErrorMessage(String message) {
+        }
+        record JoinInfo(ChessGame.TeamColor playerColor, int gameID) {
+        }
         try {
             var header = req.headers("Authorization");
             var body = serializer.fromJson(req.body(), JoinInfo.class);
             var newJoin = new JoinRequest(header, body.playerColor, body.gameID);
             GameService.joinGame(newJoin);
-        } catch (DataAccessException e){
+        } catch (DataAccessException e) {
             result = new ErrorMessage((e.getMessage()));
             res.status(401);
-        } catch (EmptyFieldException e){
-            result = new ErrorMessage ((e.getMessage()));
+        } catch (EmptyFieldException e) {
+            result = new ErrorMessage((e.getMessage()));
             res.status(400);
-        } catch (AlreadyTakenException e){
-            result = new ErrorMessage ((e.getMessage()));
+        } catch (AlreadyTakenException e) {
+            result = new ErrorMessage((e.getMessage()));
             res.status(403);
-        } catch (Exception e){
-            result = new ErrorMessage ((e.getMessage()));
+        } catch (Exception e) {
+            result = new ErrorMessage((e.getMessage()));
             res.status(500);
         }
         return serializer.toJson(result);
