@@ -2,6 +2,7 @@ package server;
 
 import dataaccess.*;
 import spark.*;
+import server.websocket.WebSocketHandler;
 
 public class Server {
     private final WebSocketHandler webSocketHandler = new WebSocketHandler();
