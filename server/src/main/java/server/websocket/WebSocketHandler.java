@@ -13,8 +13,10 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import server_facade.ResponseException;
+import websocket.commands.JoinCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -27,20 +29,36 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException, ResponseException {
+    public void onMessage(Session session, String message) throws IOException {
         UserGameCommand gameCommand = new Gson().fromJson(message, UserGameCommand.class);
-        switch (gameCommand.getCommandType()){
-            case CONNECT -> connect(gameCommand.getAuthToken(), session, gameCommand.getGameID());
-            case MAKE_MOVE -> makeMove(gameCommand.getAuthToken(), gameCommand);
-            case LEAVE -> leave(gameCommand.getAuthToken());
-            case RESIGN -> resign(gameCommand.getAuthToken());
+        try {
+            switch (gameCommand.getCommandType()) {
+                case CONNECT -> connect(gameCommand, session);
+                case MAKE_MOVE -> makeMove(gameCommand.getAuthToken(), gameCommand);
+                case LEAVE -> leave(gameCommand.getAuthToken());
+                case RESIGN -> resign(gameCommand.getAuthToken());
+            }
+        } catch (ResponseException e){
+            String authToken = gameCommand.getAuthToken();
+            String update = "Error: " + e.getMessage();
+            var errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, update);
+            session.getRemote().sendString(new Gson().toJson(errorMessage));
         }
     }
 
-    private void connect(String authToken, Session session, int gameID) throws IOException {
+    private void connect(UserGameCommand gameCommand, Session session) throws IOException {
+        String authToken = gameCommand.getAuthToken();
+        int gameID = gameCommand.getGameID();
         connections.add(authToken, gameID, session);
         String username = getUsername(authToken);
-        var message = String.format("%s has joined the game", username);
+        String message;
+        if (gameCommand instanceof JoinCommand){
+            ChessGame.TeamColor teamColor = ((JoinCommand) gameCommand).teamColor;
+            message = String.format("%s has joined the game as the color %s", username, teamColor.toString());
+        }
+        else {
+            message = String.format("%s is now observing the game", username);
+        }
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(authToken, gameID, notification);
         var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, new SQLGameDAO().getGame(gameID).game());
@@ -99,7 +117,7 @@ public class WebSocketHandler {
             } catch (InvalidMoveException e) {
                 throw new ResponseException(400, e.getMessage());
             } catch (DataAccessException e){
-                throw new ResponseException (500, "Unable to make move");
+                throw new ResponseException (500, "Unable to make move for unknown reason");
             }
         } else {
             throw new ResponseException(500, "Received bad command");
@@ -116,13 +134,13 @@ public class WebSocketHandler {
             try {
                 new SQLGameDAO().joinGameAsColor(game, ChessGame.TeamColor.BLACK, null);
             } catch (DataAccessException e) {
-                throw new ResponseException(500, "Unable to successfully leave game");
+                throw new ResponseException(500, "Unable to successfully leave game for unknown reason");
             }
         } else if(username.equals(game.whiteUsername())){
             try {
                 new SQLGameDAO().joinGameAsColor(game, ChessGame.TeamColor.WHITE, null);
             } catch (DataAccessException e) {
-                throw new ResponseException(500, "Unable to successfully leave game");
+                throw new ResponseException(500, "Unable to successfully leave game for unknown reason");
             }
         }
         connections.remove(authToken);

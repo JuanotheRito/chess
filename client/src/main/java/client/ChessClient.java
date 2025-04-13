@@ -231,7 +231,7 @@ public class ChessClient {
                             try {
                                 server.join(ChessGame.TeamColor.WHITE, gameList.get(id - 1).gameID());
                                 ws = new WebSocketFacade(serverUrl, notificationHandler);
-                                ws.join(server.authToken(), gameList.get(id - 1).gameID());
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), ChessGame.TeamColor.WHITE);
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
                                         " Have fun!");
 
@@ -244,7 +244,7 @@ public class ChessClient {
                             try {
                                 server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
                                 ws = new WebSocketFacade(serverUrl, notificationHandler);
-                                ws.join(server.authToken(), gameList.get(id - 1).gameID());
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), ChessGame.TeamColor.BLACK);
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
                                         " Have fun!");
                                 state = State.INGAME;
@@ -280,6 +280,7 @@ public class ChessClient {
                     try {
                         Integer.parseInt(params[0]);
                         state = State.SPECTATE;
+                        ws = new WebSocketFacade(serverUrl, notificationHandler);
                         return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
                     } catch (NumberFormatException e) {
                         throw new ResponseException(400, "Expected: <ID>");
@@ -303,15 +304,16 @@ public class ChessClient {
 
     public String move(String... params){}
 
-    public String resign(){
-        if (!resign){
-            resign = true;
-            return ("Are you sure? Resigning will cause a loss!");
-        }
-        else{
-            resign = false;
-            return ("You have resigned.");
-        }
+    public String resign() throws ResponseException {
+        if (state == State.INGAME) {
+            if (!resign) {
+                resign = true;
+                return ("Are you sure? Resigning will cause a loss!");
+            } else {
+                resign = false;
+                return ("You have resigned.");
+            }
+        } throw new ResponseException(400, "You are not currently in a game");
     };
 
     public String legal(String... params){}
