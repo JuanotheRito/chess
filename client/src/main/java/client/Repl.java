@@ -1,5 +1,7 @@
 package client;
+import chess.ChessGame;
 import client.websocket.NotificationHandler;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
@@ -36,7 +38,13 @@ public class Repl implements NotificationHandler {
     }
 
     public void notify(ServerMessage notification){
-        System.out.println(SET_TEXT_COLOR_RED + notification.message());
+        if (notification instanceof LoadGameMessage){
+            client.setCurrentGame(notification.getGame());
+            client.printBoard();
+        }
+        else{
+            System.out.println(SET_TEXT_COLOR_RED + notification.message());
+        }
         printPrompt();
     }
 

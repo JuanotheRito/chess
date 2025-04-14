@@ -46,7 +46,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(UserGameCommand gameCommand, Session session) throws IOException {
+    private void connect(UserGameCommand gameCommand, Session session) throws IOException, ResponseException {
         String authToken = gameCommand.getAuthToken();
         int gameID = gameCommand.getGameID();
         connections.add(authToken, gameID, session);
@@ -61,8 +61,16 @@ public class WebSocketHandler {
         }
         var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(authToken, gameID, notification);
-        var loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, new SQLGameDAO().getGame(gameID).game());
-        session.getRemote().sendString(new Gson().toJson(loadGame));
+        GameData game = new SQLGameDAO().getGame(gameID);
+        LoadGameMessage loadGame;
+        if(!(game == null)){
+            ChessGame chessGame = game.game();
+            loadGame = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, chessGame);
+            session.getRemote().sendString(new Gson().toJson(loadGame));
+        }
+        else {
+            throw new ResponseException(400, "That game does not exist");
+        }
     }
 
     private void makeMove(String authToken, UserGameCommand command) throws ResponseException, IOException {

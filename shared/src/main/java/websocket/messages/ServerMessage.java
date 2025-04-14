@@ -13,7 +13,7 @@ import java.util.Objects;
 public class ServerMessage {
     ServerMessageType serverMessageType;
     String message;
-    ChessGame game;
+    ChessGame game = null;
 
     public String message() {
         return message;
@@ -43,6 +43,10 @@ public class ServerMessage {
         }
         ServerMessage that = (ServerMessage) o;
         return getServerMessageType() == that.getServerMessageType();
+    }
+
+    public ChessGame getGame(){
+        return this.game;
     }
 
     @Override

@@ -367,7 +367,7 @@ public class WebSocketTests {
             userExpectedTypes = new ServerMessage.ServerMessageType[]{ERROR};
             inGameExpectedTypes = new ServerMessage.ServerMessageType[0];
         }
-        assertMessages(user.username(), userExpectedTypes, messages.get(user.username()));
+         assertMessages(user.username(), userExpectedTypes, messages.get(user.username()));
         for(WebsocketUser inGameUser : inGame) {
             assertMessages(inGameUser.username(), inGameExpectedTypes, messages.get(inGameUser.username()));
         }

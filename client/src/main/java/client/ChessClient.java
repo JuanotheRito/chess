@@ -22,6 +22,8 @@ public class ChessClient {
     private boolean resign = false;
     private WebSocketFacade ws;
     private final NotificationHandler notificationHandler;
+    private ChessGame currentGame = null;
+    private ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
 
     public ChessClient (String serverUrl, NotificationHandler notificationHandler){
         this.notificationHandler = notificationHandler;
@@ -54,9 +56,9 @@ public class ChessClient {
                 case "observe" -> observe(params);
                 case "leave" -> leave();
                 case "redraw" -> redraw();
-                case "move" -> move(params);
+                //case "move" -> move(params);
                 case "resign" -> resign();
-                case "legalmoves" -> legal(params);
+                //case "legal" -> legal(params);
                 default -> help();
             };
         } catch (ResponseException ex){
@@ -212,8 +214,6 @@ public class ChessClient {
     }
 
     public String join(String ... params) throws ResponseException {
-        ChessBoard chessBoard = new ChessBoard();
-        chessBoard.resetBoard();
         if (state == State.SIGNEDIN) {
             if (params.length == 2) {
                 if (gameList == null){
@@ -231,12 +231,12 @@ public class ChessClient {
                             try {
                                 server.join(ChessGame.TeamColor.WHITE, gameList.get(id - 1).gameID());
                                 ws = new WebSocketFacade(serverUrl, notificationHandler);
-                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), ChessGame.TeamColor.WHITE);
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), color);
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
                                         " Have fun!");
 
                                 state = State.INGAME;
-                                return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
+                                color = ChessGame.TeamColor.WHITE;
                             } catch (ResponseException e){
                                 throw new ResponseException(400, "That spot is either taken or doesn't exist");
                             }
@@ -244,15 +244,16 @@ public class ChessClient {
                             try {
                                 server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
                                 ws = new WebSocketFacade(serverUrl, notificationHandler);
-                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), ChessGame.TeamColor.BLACK);
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), color);
                                 System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
                                         " Have fun!");
                                 state = State.INGAME;
-                                return printBoard(ChessGame.TeamColor.BLACK, chessBoard);
+                                color = ChessGame.TeamColor.BLACK;
                             } catch (ResponseException e) {
                                 throw new ResponseException(400, "That spot is either taken or doesn't exist");
                             }
                     }
+                    return printBoard();
                 }
             }
             throw new ResponseException(400, "Expected: <ID> [WHITE|BLACK]");
@@ -272,8 +273,6 @@ public class ChessClient {
     }
 
     public String observe(String... params) throws ResponseException {
-        ChessBoard chessBoard = new ChessBoard();
-        chessBoard.resetBoard();
         if (state == State.SIGNEDIN){
             if (params.length == 1){
                 if (isInteger(params[0])) {
@@ -281,7 +280,8 @@ public class ChessClient {
                         Integer.parseInt(params[0]);
                         state = State.SPECTATE;
                         ws = new WebSocketFacade(serverUrl, notificationHandler);
-                        return printBoard(ChessGame.TeamColor.WHITE, chessBoard);
+                        color = ChessGame.TeamColor.WHITE;
+                        return printBoard();
                     } catch (NumberFormatException e) {
                         throw new ResponseException(400, "Expected: <ID>");
                     }
@@ -299,10 +299,10 @@ public class ChessClient {
     }
 
     public String redraw() throws ResponseException{
-        printBoard()
+        return printBoard();
     }
 
-    public String move(String... params){}
+    //public String move(String... params){}
 
     public String resign() throws ResponseException {
         if (state == State.INGAME) {
@@ -316,9 +316,10 @@ public class ChessClient {
         } throw new ResponseException(400, "You are not currently in a game");
     };
 
-    public String legal(String... params){}
+    //public String legal(String... params){}
 
-    public String printBoard (ChessGame.TeamColor teamColor, ChessBoard chessBoard){
+    public String printBoard (){
+        ChessBoard chessBoard = currentGame.getBoard();
         String board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +  "    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
         boolean white = true;
         for (int i = 8; i > 0; i--){
@@ -346,7 +347,7 @@ public class ChessClient {
             board += RESET_BG_COLOR + "\n";
         }
         board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +"    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
-        if (teamColor == ChessGame.TeamColor.BLACK){
+        if (color == ChessGame.TeamColor.BLACK){
             board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR +"\n";
             white = true;
             for (int x = 1; x < 9; x++){
@@ -400,6 +401,10 @@ public class ChessClient {
             };
         }
         return "";
+    }
+
+    public void setCurrentGame(ChessGame currentGame) {
+        this.currentGame = currentGame;
     }
 
     public String help(){
