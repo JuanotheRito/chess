@@ -1,6 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import model.GameData;
 
 import java.util.ArrayList;
@@ -34,9 +35,13 @@ public class SQLGameDAO implements GameDAO{
     }
 
     public void updateGame(GameData game, ChessGame chessGame) throws DataAccessException {
-        if(getGame(game.gameID()) == null){
+        System.out.println(chessGame.getBoard().getPiece(new ChessPosition(4,7)));
+        System.out.println(chessGame.getBoard().getPiece(new ChessPosition(2,7)));
+        /*if(getGame(game.gameID()) == null){
             throw new DataAccessException("Game does not exist");
-        }
+        }*/
+        System.out.println(chessGame.getBoard().getPiece(new ChessPosition(4,7)));
+        System.out.println(chessGame.getBoard().getPiece(new ChessPosition(2,7)));
         DatabaseManager.updateGame(game.gameID(), chessGame);
     }
 }

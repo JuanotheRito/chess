@@ -1,6 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
@@ -241,7 +242,8 @@ public class DatabaseManager {
 
                 preparedStatement.setString(1, gameName);
                 Gson serializer = new Gson();
-                var json = serializer.toJson(new ChessGame());
+                String json = serializer.toJson(new ChessGame());
+                System.out.println(json);
                 preparedStatement.setString(2, json);
 
                 preparedStatement.executeUpdate();
@@ -295,8 +297,8 @@ public class DatabaseManager {
                         var whiteUsername = rs.getString("whiteUsername");
                         var blackUsername = rs.getString("blackUsername");
                         var gameName = rs.getString("gameName");
-                        var json = rs.getString("game");
-                        var game = serializer.fromJson(json, ChessGame.class);
+                        String json = rs.getString("game");
+                        ChessGame game = serializer.fromJson(json, ChessGame.class);
 
                         return new GameData(id, whiteUsername, blackUsername, gameName, game);
                     }
@@ -337,7 +339,9 @@ public class DatabaseManager {
         try (var conn = getConnection()) {
             try(var preparedStatement = conn.prepareStatement("UPDATE gameData SET game = ? WHERE id = ?")){
                 Gson serializer = new Gson();
-                var json = serializer.toJson(game);
+                String json = serializer.toJson(game);
+                System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
+                System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
                 preparedStatement.setString(1, json);
                 preparedStatement.setInt(2, id);
 

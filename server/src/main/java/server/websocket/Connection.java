@@ -16,7 +16,6 @@ public class Connection {
         this.authToken = authToken;
         this.gameID = gameID;
         this.session = session;
-        this.currentGame = new SQLGameDAO().getGame(gameID).game();
     }
 
     public void send(String msg) throws IOException {

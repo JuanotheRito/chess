@@ -1,9 +1,6 @@
 package server.websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.SQLAuthDAO;
@@ -79,8 +76,10 @@ public class WebSocketHandler {
         String username = getUsername(authToken);
         ChessMove move = command.getMove();
         if (!(move == null)){
-            GameData gameData = new SQLGameDAO().getGame(connection.gameID);
-            ChessGame game = connection.currentGame;
+            GameData gameData = new SQLGameDAO().getGame(command.getGameID());
+            ChessGame game = gameData.game();
+            System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
+            System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
             ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
             try {
                 if (piece == null) {
@@ -105,6 +104,9 @@ public class WebSocketHandler {
                     try {
                         game.makeMove(move);
                         connection.currentGame = game;
+                        System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
+                        System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
+                        System.out.println(connection.currentGame.board.toString());
                     } catch (InvalidMoveException e) {
                         System.out.println(">> MAKE MOVE FAILED");
                         System.out.println("Move: " + move);
@@ -123,6 +125,9 @@ public class WebSocketHandler {
                     game.gameOver = true;
                 }
 
+                System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
+                System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
+
                 new SQLGameDAO().updateGame(gameData, game);
                 String update = String.format("%s has moved %s to %s", piece.getTeamColor().toString(),
                         piece.getPieceType().toString(),
@@ -130,7 +135,7 @@ public class WebSocketHandler {
                 );
                 ServerMessage message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
                 connections.broadcast(authToken, connection.gameID, message);
-                if (game.isInCheck(game.getTeamTurn())){
+                if (game.isInCheck(game.getTeamTurn()) && !game.isInCheckmate(game.getTeamTurn())){
                     update = String.format("%s is in check!", game.getTeamTurn().toString());
                     message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
                     connections.broadcast(null, connection.gameID, message);
