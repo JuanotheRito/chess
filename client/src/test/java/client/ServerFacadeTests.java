@@ -8,10 +8,10 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import server_facade.GameInfo;
-import server_facade.ResponseException;
+import serverfacade.GameInfo;
+import serverfacade.ResponseException;
 import server.Server;
-import server_facade.ServerFacade;
+import serverfacade.ServerFacade;
 import service.ClearService;
 
 import java.util.List;

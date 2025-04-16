@@ -4,9 +4,9 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import client.websocket.NotificationHandler;
-import server_facade.GameInfo;
-import server_facade.ResponseException;
-import server_facade.ServerFacade;
+import serverfacade.GameInfo;
+import serverfacade.ResponseException;
+import serverfacade.ServerFacade;
 import client.websocket.WebSocketFacade;
 
 import java.util.Arrays;

@@ -2,14 +2,13 @@ package client.websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import server_facade.ResponseException;
+import serverfacade.ResponseException;
 import websocket.commands.JoinCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 
-import javax.swing.*;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;

@@ -10,7 +10,7 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import server_facade.ResponseException;
+import serverfacade.ResponseException;
 import websocket.commands.JoinCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
