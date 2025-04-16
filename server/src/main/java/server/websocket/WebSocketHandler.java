@@ -78,8 +78,6 @@ public class WebSocketHandler {
         if (!(move == null)){
             GameData gameData = new SQLGameDAO().getGame(command.getGameID());
             ChessGame game = gameData.game();
-            System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
-            System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
             ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
             try {
                 if (piece == null) {
@@ -101,21 +99,8 @@ public class WebSocketHandler {
                     throw new ResponseException(400, "Game is over");
                 }
                 else {
-                    try {
                         game.makeMove(move);
                         connection.currentGame = game;
-                        System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
-                        System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
-                        System.out.println(connection.currentGame.board.toString());
-                    } catch (InvalidMoveException e) {
-                        System.out.println(">> MAKE MOVE FAILED");
-                        System.out.println("Move: " + move);
-                        System.out.println("Start: " + move.getStartPosition());
-                        System.out.println("End: " + move.getEndPosition());
-                        System.out.println("Start Piece: " + game.getBoard().getPiece(move.getStartPosition()));
-                        System.out.println("Turn: " + game.getTeamTurn());
-                        throw e; // rethrow so test still fails
-                    }
                 }
 
                 boolean isCheckmate = game.isInCheckmate(game.getTeamTurn());
@@ -124,9 +109,6 @@ public class WebSocketHandler {
                 if (isCheckmate || isStalemate){
                     game.gameOver = true;
                 }
-
-                System.out.println(game.getBoard().getPiece(new ChessPosition(4,7)));
-                System.out.println(game.getBoard().getPiece(new ChessPosition(2,7)));
 
                 new SQLGameDAO().updateGame(gameData, game);
                 String update = String.format("%s has moved %s to %s", piece.getTeamColor().toString(),
@@ -197,10 +179,13 @@ public class WebSocketHandler {
         int gameID = connection.gameID;
         String username = getUsername(authToken);
         GameData gameData = new SQLGameDAO().getGame(connection.gameID);
-        if (!Objects.equals(username, gameData.blackUsername()) || !Objects.equals(username, gameData.whiteUsername())){
+        if (!Objects.equals(username, gameData.blackUsername()) && !Objects.equals(username, gameData.whiteUsername())){
             throw new ResponseException(400, "You are observing, you cannot resign");
         }
         ChessGame game = gameData.game();
+        if (game.gameOver){
+            throw new ResponseException(400, "The game has already ended");
+        }
         game.gameOver = true;
         try {
             new SQLGameDAO().updateGame(gameData, game);

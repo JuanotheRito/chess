@@ -26,9 +26,11 @@ public class ConnectionManager {
         if (exclude == null){
             for (var c : connections.values()) {
                 if (c.session.isOpen()) {
-                    c.send(new Gson().toJson(message));
-                    if (message instanceof LoadGameMessage loadGameMessage){
-                        c.currentGame = loadGameMessage.getGame();
+                    if (c.gameID == gameID) {
+                        c.send(new Gson().toJson(message));
+                        if (message instanceof LoadGameMessage loadGameMessage){
+                            c.currentGame = loadGameMessage.getGame();
+                        }
                     }
                 } else {
                     removeList.add(c);
