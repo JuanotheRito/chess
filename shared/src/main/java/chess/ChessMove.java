@@ -23,6 +23,12 @@ public class ChessMove {
                 && promotionPiece == chessMove.promotionPiece;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Move(%s → %s, promote=%s)", startPosition, endPosition,
+                promotionPiece != null ? promotionPiece.name() : "null");
+    }
+
     public boolean getCastle(){
         return isCastle;
     }

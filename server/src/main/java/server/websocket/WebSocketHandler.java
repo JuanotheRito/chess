@@ -8,13 +8,13 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.SQLAuthDAO;
 import dataaccess.SQLGameDAO;
+import model.AuthData;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import server_facade.ResponseException;
 import websocket.commands.JoinCommand;
-import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -22,6 +22,7 @@ import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
@@ -52,15 +53,6 @@ public class WebSocketHandler {
         connections.add(authToken, gameID, session);
         String username = getUsername(authToken);
         String message;
-        if (gameCommand instanceof JoinCommand){
-            ChessGame.TeamColor teamColor = ((JoinCommand) gameCommand).teamColor;
-            message = String.format("%s has joined the game as the color %s", username, teamColor.toString());
-        }
-        else {
-            message = String.format("%s is now observing the game", username);
-        }
-        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(authToken, gameID, notification);
         GameData game = new SQLGameDAO().getGame(gameID);
         LoadGameMessage loadGame;
         if(!(game == null)){
@@ -71,36 +63,72 @@ public class WebSocketHandler {
         else {
             throw new ResponseException(400, "That game does not exist");
         }
+        if (gameCommand instanceof JoinCommand){
+            ChessGame.TeamColor teamColor = ((JoinCommand) gameCommand).teamColor;
+            message = String.format("%s has joined the game as the color %s", username, teamColor.toString());
+        }
+        else {
+            message = String.format("%s is now observing the game", username);
+        }
+        var notification = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(authToken, gameID, notification);
     }
 
     private void makeMove(String authToken, UserGameCommand command) throws ResponseException, IOException {
         Connection connection = connections.connections.get(authToken);
         String username = getUsername(authToken);
-        if (command instanceof MakeMoveCommand moveCommand){
-            ChessMove move = moveCommand.move();
+        ChessMove move = command.getMove();
+        if (!(move == null)){
             GameData gameData = new SQLGameDAO().getGame(connection.gameID);
-            ChessGame game = gameData.game();
+            ChessGame game = connection.currentGame;
             ChessPiece piece = game.getBoard().getPiece(move.getStartPosition());
             try {
+                if (piece == null) {
+                    throw new InvalidMoveException("No piece at given position");
+                }
                 if (username.equals(gameData.whiteUsername())){
                     if (!piece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
                         throw new InvalidMoveException("Not your piece");
                     }
                 }
-                if (username.equals(gameData.blackUsername())){
+                else if (username.equals(gameData.blackUsername())){
                     if (!piece.getTeamColor().equals(ChessGame.TeamColor.BLACK)){
                         throw new InvalidMoveException("Not your piece");
                     }
+                } else {
+                    throw new InvalidMoveException("You aren't playing, you cannot move pieces");
                 }
-                game.makeMove(move);
-                new SQLGameDAO().updateGame(new SQLGameDAO().getGame(connection.gameID), game);
-                ServerMessage message = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                connections.broadcast(null, connection.gameID, message);
+                if (game.gameOver){
+                    throw new ResponseException(400, "Game is over");
+                }
+                else {
+                    try {
+                        game.makeMove(move);
+                        connection.currentGame = game;
+                    } catch (InvalidMoveException e) {
+                        System.out.println(">> MAKE MOVE FAILED");
+                        System.out.println("Move: " + move);
+                        System.out.println("Start: " + move.getStartPosition());
+                        System.out.println("End: " + move.getEndPosition());
+                        System.out.println("Start Piece: " + game.getBoard().getPiece(move.getStartPosition()));
+                        System.out.println("Turn: " + game.getTeamTurn());
+                        throw e; // rethrow so test still fails
+                    }
+                }
+
+                boolean isCheckmate = game.isInCheckmate(game.getTeamTurn());
+                boolean isStalemate = game.isInStalemate(game.getTeamTurn());
+
+                if (isCheckmate || isStalemate){
+                    game.gameOver = true;
+                }
+
+                new SQLGameDAO().updateGame(gameData, game);
                 String update = String.format("%s has moved %s to %s", piece.getTeamColor().toString(),
                         piece.getPieceType().toString(),
                         move.getEndPosition().toString()
                 );
-                message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
+                ServerMessage message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
                 connections.broadcast(authToken, connection.gameID, message);
                 if (game.isInCheck(game.getTeamTurn())){
                     update = String.format("%s is in check!", game.getTeamTurn().toString());
@@ -122,6 +150,8 @@ public class WebSocketHandler {
                     message = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, update);
                     connections.broadcast(null, connection.gameID, message);
                 }
+                message = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                connections.broadcast(null, connection.gameID, message);
             } catch (InvalidMoveException e) {
                 throw new ResponseException(400, e.getMessage());
             } catch (DataAccessException e){
@@ -162,6 +192,9 @@ public class WebSocketHandler {
         int gameID = connection.gameID;
         String username = getUsername(authToken);
         GameData gameData = new SQLGameDAO().getGame(connection.gameID);
+        if (!Objects.equals(username, gameData.blackUsername()) || !Objects.equals(username, gameData.whiteUsername())){
+            throw new ResponseException(400, "You are observing, you cannot resign");
+        }
         ChessGame game = gameData.game();
         game.gameOver = true;
         try {
@@ -177,11 +210,17 @@ public class WebSocketHandler {
         connections.broadcast(null, gameID, message);
     }
 
-    private String getUsername(String authToken){
+    private String getUsername(String authToken) throws ResponseException {
         try {
-            return new SQLAuthDAO().getAuth(authToken).username();
+            AuthData authData = new SQLAuthDAO().getAuth(authToken);
+            if (!(authData == null)){
+                return authData.username();
+            }
+            else {
+                throw new DataAccessException("Cannot find specified authData");
+            }
         } catch (DataAccessException e) {
-            return "Unknown";
+            throw new ResponseException(400, "not authorized");
         }
     }
 }

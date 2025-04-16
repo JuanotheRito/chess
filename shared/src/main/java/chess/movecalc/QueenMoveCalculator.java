@@ -225,6 +225,6 @@ public class QueenMoveCalculator implements  MoveCalculator{
     }
 
     public void addValidMove(ArrayList<ChessMove> validMoves, ChessPosition startPosition, ChessPosition newPosition) {
-        validMoves.add(new ChessMove(startPosition, new ChessPosition(newPosition.getRow(), newPosition.getColumn()), null));
+        validMoves.add(new ChessMove(startPosition, newPosition, null));
     }
 }
