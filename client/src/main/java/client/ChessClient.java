@@ -299,7 +299,7 @@ public class ChessClient {
                         ws = new WebSocketFacade(serverUrl, notificationHandler);
                         ws.observe(server.authToken(), currentGameID);
                         color = ChessGame.TeamColor.WHITE;
-                        return printBoard(null);
+                        return (String.format("Now observing game %s", gameList.get(id-1).gameName()));
                     } catch (NumberFormatException e) {
                         throw new ResponseException(400, "Expected: <ID>");
                     } catch (Exception e){
@@ -402,7 +402,6 @@ public class ChessClient {
             } else {
                 resign = false;
                 ws.resign(server.authToken(), currentGameID);
-                state = State.SIGNEDIN;
                 return ("You have resigned.");
             }
         } throw new ResponseException(400, "You are not currently in a game");
