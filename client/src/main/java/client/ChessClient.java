@@ -1,16 +1,18 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
+import chess.*;
 import client.websocket.NotificationHandler;
 import serverfacade.GameInfo;
 import serverfacade.ResponseException;
 import serverfacade.ServerFacade;
 import client.websocket.WebSocketFacade;
 
+import java.sql.Array;
+import java.sql.SQLPermission;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
@@ -24,6 +26,7 @@ public class ChessClient {
     private final NotificationHandler notificationHandler;
     private ChessGame currentGame = null;
     private ChessGame.TeamColor color = ChessGame.TeamColor.WHITE;
+    private int currentGameID;
 
     public ChessClient (String serverUrl, NotificationHandler notificationHandler){
         this.notificationHandler = notificationHandler;
@@ -56,9 +59,9 @@ public class ChessClient {
                 case "observe" -> observe(params);
                 case "leave" -> leave();
                 case "redraw" -> redraw();
-                //case "move" -> move(params);
+                case "move" -> move(params);
                 case "resign" -> resign();
-                //case "legal" -> legal(params);
+                case "legal" -> legal(params);
                 default -> help();
             };
         } catch (ResponseException ex){
@@ -214,6 +217,7 @@ public class ChessClient {
     }
 
     public String join(String ... params) throws ResponseException {
+        String result;
         if (state == State.SIGNEDIN) {
             if (params.length == 2) {
                 if (gameList == null){
@@ -226,37 +230,45 @@ public class ChessClient {
                     } catch (NumberFormatException e){
                         throw new ResponseException(400, "Expected: <ID> [WHITE|BLACK]");
                     }
+                    try{
                     switch (params[1].toUpperCase()){
-                        case "WHITE":
+                        case "WHITE" -> {
                             try {
                                 server.join(ChessGame.TeamColor.WHITE, gameList.get(id - 1).gameID());
                                 ws = new WebSocketFacade(serverUrl, notificationHandler);
                                 ws.join(server.authToken(), gameList.get(id - 1).gameID(), color);
-                                System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
-                                        " Have fun!");
+                                result = "Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as WHITE." +
+                                        " Have fun!";
 
                                 state = State.INGAME;
+                                currentGameID = gameList.get(id - 1).gameID();
                                 color = ChessGame.TeamColor.WHITE;
-                            } catch (ResponseException e){
-                                throw new ResponseException(400, "That spot is either taken or doesn't exist");
-                            }
-                        case "BLACK":
-                            try {
-                                server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
-                                ws = new WebSocketFacade(serverUrl, notificationHandler);
-                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), color);
-                                System.out.println("Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
-                                        " Have fun!");
-                                state = State.INGAME;
-                                color = ChessGame.TeamColor.BLACK;
+                                return result;
                             } catch (ResponseException e) {
                                 throw new ResponseException(400, "That spot is either taken or doesn't exist");
                             }
+                        }
+                        case "BLACK" -> {
+                            try {
+                                server.join(ChessGame.TeamColor.BLACK, gameList.get(id - 1).gameID());
+                                ws = new WebSocketFacade(serverUrl, notificationHandler);
+                                ws.join(server.authToken(), gameList.get(id - 1).gameID(), ChessGame.TeamColor.BLACK);
+                                result = "Successfully joined the game \"" + gameList.get(id - 1).gameName() + "\" as BLACK." +
+                                        " Have fun!";
+                                state = State.INGAME;
+                                currentGameID = gameList.get(id - 1).gameID();
+                                color = ChessGame.TeamColor.BLACK;
+                                return result;
+                            } catch (ResponseException e) {
+                                throw new ResponseException(400, "That spot is either taken or doesn't exist");
+                            }
+                        }
                     }
-                    return printBoard();
+                    } catch (IndexOutOfBoundsException e){
+                        throw new ResponseException(400, "That game does not exist");
+                    }
                 }
-            }
-            throw new ResponseException(400, "Expected: <ID> [WHITE|BLACK]");
+            }throw new ResponseException(400, "Expected: <ID> [WHITE|BLACK]");
         } throw new ResponseException(400, "You need to be signed in to join a game.");
     }
 
@@ -275,15 +287,23 @@ public class ChessClient {
     public String observe(String... params) throws ResponseException {
         if (state == State.SIGNEDIN){
             if (params.length == 1){
+                if (gameList == null){
+                    throw new ResponseException(400, "Please type \"list\" to get a list of games before attempting to observe one.");
+                }
+                int id;
                 if (isInteger(params[0])) {
                     try {
-                        Integer.parseInt(params[0]);
+                        id = Integer.parseInt(params[0]);
+                        currentGameID = gameList.get(id - 1).gameID();
                         state = State.SPECTATE;
                         ws = new WebSocketFacade(serverUrl, notificationHandler);
+                        ws.observe(server.authToken(), currentGameID);
                         color = ChessGame.TeamColor.WHITE;
-                        return printBoard();
+                        return printBoard(null);
                     } catch (NumberFormatException e) {
                         throw new ResponseException(400, "Expected: <ID>");
+                    } catch (Exception e){
+                        throw new ResponseException(400, "That game does not exist");
                     }
                 }
             }throw new ResponseException(400, "Expected: <ID>");
@@ -292,17 +312,87 @@ public class ChessClient {
 
     public String leave() throws ResponseException {
         if (state == State.INGAME || state == State.SPECTATE){
-                state = State.SIGNEDIN;
-                return "You have left the game.";
+            state = State.SIGNEDIN;
+            ws.leave(server.authToken(), currentGameID);
+            return "You have left the game.";
         }
         throw new ResponseException(400, "You are not currently in a game");
     }
 
     public String redraw() throws ResponseException{
-        return printBoard();
+        return printBoard(null);
     }
 
-    //public String move(String... params){}
+    public String move(String... params) throws ResponseException {
+        if (state == State.INGAME){
+            if (params.length == 2){
+                String arg1 = params[0];
+                String arg2 = params[1];
+
+                ChessPosition startPosition = evalPosition(arg1);
+                ChessPosition endPosition = evalPosition(arg2);
+                ChessPiece piece = currentGame.getBoard().getPiece(startPosition);
+
+                ChessPiece.PieceType promotion = null;
+                if (piece.getPieceType() == ChessPiece.PieceType.PAWN){
+                    int promotionRow = 0;
+                    if (color == ChessGame.TeamColor.WHITE){
+                        promotionRow = 8;
+                    }
+                    if (color == ChessGame.TeamColor.BLACK){
+                        promotionRow = 1;
+                    }
+                    if (endPosition.getRow() == promotionRow){
+                        System.out.print("What piece would you like to promote your pawn to? >>> ");
+                        Scanner scanner = new Scanner(System.in);
+                        String line = scanner.nextLine().toUpperCase();
+                        switch (line){
+                            case "QUEEN" -> promotion = ChessPiece.PieceType.QUEEN;
+                            case "KNIGHT" -> promotion = ChessPiece.PieceType.KNIGHT;
+                            case "BISHOP" -> promotion = ChessPiece.PieceType.BISHOP;
+                            case "ROOK" -> promotion = ChessPiece.PieceType.ROOK;
+                            default -> throw new ResponseException(400, "That is not a valid piece");
+                        }
+                        System.out.print("\n");
+                    }
+                }
+                ChessMove move = new ChessMove(startPosition, endPosition, promotion);
+                ws.move(server.authToken(), currentGameID, move);
+                List<ChessMove> validMoves = (List<ChessMove>) currentGame.validMoves(startPosition);
+                if (validMoves.contains(move)){
+                    return (String.format("Moved piece at %s to %s", startPosition, endPosition));
+                }
+                else {return ("");}
+            } else{
+                throw new ResponseException(400, "Expected [POSITION1] [POSITION2]");
+            }
+        } throw new ResponseException(400, "You are not currently playing a game");
+    }
+
+    public ChessPosition evalPosition(String input) throws ResponseException {
+        int col;
+        int row;
+        switch (input.charAt(0)){
+            case 'a' -> col = 1;
+            case 'b' -> col = 2;
+            case 'c' -> col = 3;
+            case 'd' -> col = 4;
+            case 'e' -> col = 5;
+            case 'f' -> col = 6;
+            case 'g' -> col = 7;
+            case 'h' -> col = 8;
+            default -> throw new ResponseException(400, "Not a valid position(s)");
+        }
+        try {
+            row = Integer.parseInt(input.substring(1, 2));
+            if (row > 8 || row < 1){
+                throw new ResponseException(400, "Not a valid position(s)");
+            }
+        } catch (NumberFormatException e){
+            throw new ResponseException(400, "Not a valid position(s)");
+        }
+        return new ChessPosition(row, col);
+    }
 
     public String resign() throws ResponseException {
         if (state == State.INGAME) {
@@ -311,24 +401,58 @@ public class ChessClient {
                 return ("Are you sure? Resigning will cause a loss!");
             } else {
                 resign = false;
+                ws.resign(server.authToken(), currentGameID);
+                state = State.SIGNEDIN;
                 return ("You have resigned.");
             }
         } throw new ResponseException(400, "You are not currently in a game");
     };
 
-    //public String legal(String... params){}
+    public String legal(String... params) throws ResponseException{
+        if (params.length == 1){
+            if (state == State.INGAME || state == State.SPECTATE) {
+                ChessPosition position = evalPosition(params[0]);
+                return printBoard(position);
+            }
+            throw new ResponseException(400, "You aren't watching or playing a game");
+        }
+        throw new ResponseException(400, "Expected <POSITION>");
+    }
 
-    public String printBoard (){
+    public String printBoard (ChessPosition position){
         ChessBoard chessBoard = currentGame.getBoard();
         String board = SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK +  "    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
         boolean white = true;
         for (int i = 8; i > 0; i--){
             board += SET_BG_COLOR_LIGHT_GREY + SET_TEXT_COLOR_BLACK + " " + i + " ";
             for (int f = 0; f < 8; f++){
-                if (white){
+                ChessPosition testPosition = new ChessPosition(i, f+1);
+                ArrayList<ChessPosition> validMove = new ArrayList<>();
+                boolean yellow = false;
+                if (position != null) {
+                    if (currentGame.getBoard().getPiece(position) != null) {
+                        for (ChessMove move : currentGame.validMoves(position)) {
+                            validMove.add(move.getEndPosition());
+                        }
+
+                        if (testPosition.equals(position)) {
+                            board += SET_BG_COLOR_YELLOW;
+                            yellow = true;
+                        }
+                    }
+                }
+                if (white && !yellow) {
+                    if (validMove.contains(testPosition)) {
+                        board += SET_BG_COLOR_GREEN;
+                    } else {
                     board += SET_BG_COLOR_WHITE;
-                } else {
-                    board += SET_BG_COLOR_DARK_GREY;
+                    }
+                } else if (!yellow) {
+                    if (validMove.contains(testPosition)) {
+                        board += SET_BG_COLOR_DARK_GREEN;
+                    } else {
+                        board += SET_BG_COLOR_DARK_GREY;
+                    }
                 }
                 white = !white;
                 ChessPiece piece = chessBoard.getBoard()[i-1][f];
@@ -353,10 +477,33 @@ public class ChessClient {
             for (int x = 1; x < 9; x++){
                 board += SET_BG_COLOR_LIGHT_GREY + " " + x + " ";
                 for (int y = 7; y >= 0; y--){
-                    if (white){
-                        board += SET_BG_COLOR_WHITE;
-                    } else {
-                        board += SET_BG_COLOR_DARK_GREY;
+                    ChessPosition testPosition = new ChessPosition(x, y+1);
+                    ArrayList<ChessPosition> validMove = new ArrayList<>();
+                    boolean yellow = false;
+                    if (position != null) {
+                        if (currentGame.getBoard().getPiece(position) != null) {
+                            for (ChessMove move : currentGame.validMoves(position)) {
+                                validMove.add(move.getEndPosition());
+                            }
+
+                            if (testPosition.equals(position)) {
+                                board += SET_BG_COLOR_YELLOW;
+                                yellow = true;
+                            }
+                        }
+                    }
+                    if (white && !yellow) {
+                        if (validMove.contains(testPosition)) {
+                            board += SET_BG_COLOR_GREEN;
+                        } else {
+                            board += SET_BG_COLOR_WHITE;
+                        }
+                    } else if (!yellow) {
+                        if (validMove.contains(testPosition)) {
+                            board += SET_BG_COLOR_DARK_GREEN;
+                        } else {
+                            board += SET_BG_COLOR_DARK_GREY;
+                        }
                     }
                     white = !white;
                     ChessPiece piece = chessBoard.getBoard()[x-1][y];
@@ -437,7 +584,7 @@ public class ChessClient {
                     \u001b[32mleave - \u001b[34mleave the game you are currently playing
                     \u001b[32mmove <SPACE1> <SPACE2> [WHITE|BLACK] - \u001b[34mmove the piece at Space 1 to Space 2
                     \u001b[32mresign - \u001b[34mforfeit the current game
-                    \u001b[32mlegalmoves <SPACE> - \u001b[34mhighlight the legal moves of the piece at the given space
+                    \u001b[32mlegal <SPACE> - \u001b[34mhighlight the legal moves of the piece at the given space
                     """;
         }
         return res;

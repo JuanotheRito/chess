@@ -11,7 +11,6 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import serverfacade.ResponseException;
-import websocket.commands.JoinCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -37,7 +36,6 @@ public class WebSocketHandler {
                 case RESIGN -> resign(gameCommand.getAuthToken());
             }
         } catch (ResponseException e){
-            String authToken = gameCommand.getAuthToken();
             String update = "Error: " + e.getMessage();
             var errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, update);
             session.getRemote().sendString(new Gson().toJson(errorMessage));
@@ -60,8 +58,8 @@ public class WebSocketHandler {
         else {
             throw new ResponseException(400, "That game does not exist");
         }
-        if (gameCommand instanceof JoinCommand){
-            ChessGame.TeamColor teamColor = ((JoinCommand) gameCommand).teamColor;
+        if (gameCommand.getTeamColor() != null){
+            ChessGame.TeamColor teamColor = gameCommand.getTeamColor();
             message = String.format("%s has joined the game as the color %s", username, teamColor.toString());
         }
         else {
